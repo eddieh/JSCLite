@@ -1,4 +1,4 @@
-#include "Platform.h"
+#include "../wtf/Platform.h"
 
 #if PLATFORM(DARWIN)
 

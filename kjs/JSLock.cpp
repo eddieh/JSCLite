@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU Library General Public License
  * along with this library; see the file COPYING.LIB.  If not, write to
  * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
- * Boston, MA 02110-1301, USA 
+ * Boston, MA 02110-1301, USA
  *
  */
 
@@ -24,6 +24,8 @@
 #include "JSLock.h"
 
 #include "collector.h"
+
+#include <pthread.h>
 
 namespace KJS {
 
@@ -81,7 +83,7 @@ int JSLock::lockCount()
 {
     return interpreterLockCount;
 }
-        
+
 JSLock::DropAllLocks::DropAllLocks()
 {
     int lockCount = JSLock::lockCount();
@@ -122,7 +124,7 @@ void JSLockRecoverAllLocks(int lockCount)
     ASSERT(KJS::JSLock::lockCount() == 0);
     for (int i = 0; i < lockCount; i++)
         KJS::JSLock::lock();
-}    
+}
 
 static pthread_t javaScriptCollectionThread = 0;
 
@@ -139,4 +141,3 @@ pthread_t JSJavaScriptCollectionThread (void)
 #ifdef __cplusplus
 }
 #endif
-

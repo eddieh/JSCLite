@@ -1,11 +1,8 @@
 #!/bin/sh
 
-export SRCROOT=$PWD
-export WebCore=$PWD
-export CREATE_HASH_TABLE="$SRCROOT/kjs/create_hash_table"
+export SRCROOT=$1
 
 mkdir -p DerivedSources/JavaScriptCore
 cd DerivedSources/JavaScriptCore
 
-make -f ../../DerivedSources.make JavaScriptCore=../.. BUILT_PRODUCTS_DIR=../..
-cd ../..
+make -f $SRCROOT/DerivedSources.make JavaScriptCore=$SRCROOT BUILT_PRODUCTS_DIR=$SRCROOT/build

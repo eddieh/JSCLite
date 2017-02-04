@@ -25,6 +25,7 @@
 
 #include <ctype.h>
 #include <string.h>
+#include <limits.h>
 
 #include "interpreter.h"
 #include "nodes.h"
@@ -900,7 +901,7 @@ Identifier *Lexer::makeIdentifier(KJS::UChar*, unsigned int)
   identifiers[numIdentifiers++] = identifier;
   return identifier;
 }
- 
+
 // FIXME: this completely ignores its parameters, instead using buffer16 and pos16 - wtf?
 UString *Lexer::makeUString(KJS::UChar*, unsigned int)
 {
