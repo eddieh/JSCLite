@@ -149,6 +149,8 @@
 // multiple threads only supported on Mac for now
 #if PLATFORM(MAC)
 #define KXMLCORE_USE_MULTIPLE_THREADS 1
+// don't build with Core Foundation support
+#undef KXMLCORE_USE_APPLE_CF
 #endif
 
 // for Unicode, KDE uses Qt, everything else uses ICU

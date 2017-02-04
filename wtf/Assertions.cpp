@@ -21,7 +21,7 @@
  * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #include "config.h"
@@ -30,7 +30,7 @@
 #include <stdarg.h>
 #include <string.h>
 
-#if PLATFORM(MAC)
+#if PLATFORM(MAC) && USE(APPLE_CF)
 #include <CoreFoundation/CFString.h>
 #endif
 
@@ -42,11 +42,11 @@ static int (* vfprintf_no_warning)(FILE *, const char *, va_list) = vfprintf;
 
 static void vprintf_stderr_common(const char *format, va_list args)
 {
-#if PLATFORM(MAC)
+#if PLATFORM(MAC) && USE(APPLE_CF)
     if (strstr(format, "%@")) {
         CFStringRef cfFormat = CFStringCreateWithCString(NULL, format, kCFStringEncodingUTF8);
         CFStringRef str = CFStringCreateWithFormatAndArguments(NULL, NULL, cfFormat, args);
-        
+
         int length = CFStringGetMaximumSizeForEncoding(CFStringGetLength(str), kCFStringEncodingUTF8);
         char *buffer = (char *)malloc(length + 1);
 
@@ -106,10 +106,10 @@ void WTFReportError(const char *file, int line, const char *function, const char
 }
 
 void WTFLog(const char*, int, const char*, WTFLogChannel *channel, const char *format, ...)
-{    
+{
     if (channel->state != WTFLogChannelOn)
         return;
-    
+
     va_list args;
     va_start(args, format);
     vprintf_stderr_common(format, args);

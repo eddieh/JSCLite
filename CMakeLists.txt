@@ -62,6 +62,7 @@ add_library(js STATIC
   kjs/nodes.cpp
   kjs/nodes2string.cpp
   kjs/number_object.cpp
+  kjs/PropertyNameArray.cpp
   kjs/object.cpp
   kjs/object_object.cpp
   kjs/operations.cpp
@@ -101,6 +102,13 @@ add_library(js STATIC
   pcre/ucp_findchar.c
 
   )
+set_target_properties(js PROPERTIES COMPILE_FLAGS "-m32" LINK_FLAGS "-m32")
 
 set(CMAKE_CXX_FLAGS "-s -Os -fno-exceptions -fno-rtti -fno-stack-protector -ffunction-sections -fdata-sections -fno-unroll-loops")
 set(CMAKE_EXE_LINKER_FLAGS "-s")
+
+# add test executable
+include_directories("${PROJECT_SOURCE_DIR}/API")
+add_executable(testkjs "${PROJECT_SOURCE_DIR}/kjs/testkjs.cpp")
+set_target_properties(testkjs PROPERTIES COMPILE_FLAGS "-m32" LINK_FLAGS "-m32")
+target_link_libraries(testkjs js)
