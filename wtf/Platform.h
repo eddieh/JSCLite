@@ -49,6 +49,14 @@
 #define KXMLCORE_PLATFORM_WIN_OS 1
 #endif
 
+// PLATFORM(ANDROID)
+// Operating system level dependencies for Android that should be used
+// regardless of operating environment
+#if defined(ANDROID)     \
+ || defined(__ANDROID__)
+#define KXMLCORE_PLATFORM_ANDROID 1
+#endif
+
 // PLATFORM(UNIX)
 // Operating system level dependencies for Unix-like systems that
 // should be used regardless of operating environment
@@ -58,7 +66,10 @@
    || defined(__unix)      \
    || defined(__unix__)    \
    || defined (__NetBSD__) \
-   || defined(_AIX)
+   || defined(_AIX)        \
+   || defined(__linux__)   \
+   || defined(ANDROID)     \
+   || defined(__ANDROID__)
 #define KXMLCORE_PLATFORM_UNIX 1
 #endif
 

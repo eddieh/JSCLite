@@ -100,7 +100,7 @@ struct CollectorHeap {
   size_t numBlocks;
   size_t usedBlocks;
   size_t firstBlockWithPossibleSpace;
-  
+
   CollectorCell **oversizeCells;
   size_t numOversizeCells;
   size_t usedOversizeCells;
@@ -123,7 +123,7 @@ void* Collector::allocate(size_t s)
     collect();
     numLiveObjects = heap.numLiveObjects;
   }
-  
+
   if (s > CELL_SIZE) {
     // oversize allocator
 
@@ -135,7 +135,7 @@ void* Collector::allocate(size_t s)
       heap.numOversizeCells = numOversizeCells;
       heap.oversizeCells = static_cast<CollectorCell **>(fastRealloc(heap.oversizeCells, numOversizeCells * sizeof(CollectorCell *)));
     }
-    
+
     void *newCell = fastMalloc(s);
     heap.oversizeCells[usedOversizeCells] = static_cast<CollectorCell *>(newCell);
     heap.usedOversizeCells = usedOversizeCells + 1;
@@ -143,9 +143,9 @@ void* Collector::allocate(size_t s)
 
     return newCell;
   }
-  
+
   // slab allocator
-  
+
   size_t usedBlocks = heap.usedBlocks;
 
   size_t i = heap.firstBlockWithPossibleSpace;
@@ -180,10 +180,10 @@ allocateNewBlock:
     heap.usedBlocks = usedBlocks + 1;
     heap.firstBlockWithPossibleSpace = usedBlocks;
   }
-  
+
   // find a free spot in the block and detach it from the free list
   CollectorCell *newCell = targetBlock->freeList;
-  
+
   // "next" field is a byte offset -- 0 means next cell, so a zeroed block is already initialized
   // could avoid the casts by using a cell offset, but this avoids a relatively-slow multiply
   targetBlock->freeList = reinterpret_cast<CollectorCell *>(reinterpret_cast<char *>(newCell + 1) + newCell->u.freeCell.next);
@@ -206,8 +206,8 @@ struct Collector::Thread {
 pthread_key_t registeredThreadKey;
 pthread_once_t registeredThreadKeyOnce = PTHREAD_ONCE_INIT;
 Collector::Thread *registeredThreads;
-  
-static void destroyRegisteredThread(void *data) 
+
+static void destroyRegisteredThread(void *data)
 {
   Collector::Thread *thread = (Collector::Thread *)data;
 
@@ -264,10 +264,10 @@ void Collector::markStackObjectsConservatively(void *start, void *end)
   assert(((char *)end - (char *)start) < 0x1000000);
   assert(IS_POINTER_ALIGNED(start));
   assert(IS_POINTER_ALIGNED(end));
-  
+
   char **p = (char **)start;
   char **e = (char **)end;
-  
+
   size_t usedBlocks = heap.usedBlocks;
   CollectorBlock **blocks = heap.blocks;
   size_t usedOversizeCells = heap.usedOversizeCells;
@@ -304,7 +304,7 @@ void Collector::markCurrentThreadConservatively()
     setjmp(registers);
 
 #if PLATFORM(DARWIN)
-    pthread_t thread = pthread_self();    
+    pthread_t thread = pthread_self();
     void *stackBase = pthread_get_stackaddr_np(thread);
 #elif PLATFORM(WIN_OS) && PLATFORM(X86) && COMPILER(MSVC)
     NT_TIB *pTib;
@@ -326,9 +326,12 @@ void Collector::markCurrentThreadConservatively()
         // FIXME: this function is non-portable; other POSIX systems may have different np alternatives
         pthread_getattr_np(thread, &sattr);
 #endif
-        // Should work but fails on Linux (?)
-        //  pthread_attr_getstack(&sattr, &stackBase, &stackSize);
+#if PLATFORM(LINIX) || PLATFORM(ANDROID)
+        size_t stackSize;
+        pthread_attr_getstack(&sattr, &stackBase, &stackSize);
+#else
         pthread_attr_getstackaddr(&sattr, &stackBase);
+#endif
         assert(stackBase);
         stackThread = thread;
     }
@@ -374,10 +377,10 @@ void Collector::markOtherThreadConservatively(Thread *thread)
 #endif
   // get the thread register state
   thread_get_state(thread->machThread, flavor, (thread_state_t)&regs, &user_count);
-  
+
   // scan the registers
   markStackObjectsConservatively((void *)&regs, (void *)((char *)&regs + (user_count * sizeof(usword_t))));
-   
+
   // scan the stack
 #if PLATFORM(X86) && __DARWIN_UNIX03
   markStackObjectsConservatively((void *)regs.__esp, pthread_get_stackaddr_np(thread->posixThread));
@@ -392,7 +395,7 @@ void Collector::markOtherThreadConservatively(Thread *thread)
 #elif PLATFORM(PPC) || PLATFORM(PPC64)
   markStackObjectsConservatively((void *)regs.r1, pthread_get_stackaddr_np(thread->posixThread));
 #elif defined(__arm__)
-  markStackObjectsConservatively((void *)regs.__sp, pthread_get_stackaddr_np(thread->posixThread)); 
+  markStackObjectsConservatively((void *)regs.__sp, pthread_get_stackaddr_np(thread->posixThread));
 #else
 #error Unknown Architecture
 #endif
@@ -478,7 +481,7 @@ bool Collector::collect()
   List::markProtectedLists();
 
   // SWEEP: delete everything with a zero refcount (garbage) and unmark everything else
-  
+
   size_t emptyBlocks = 0;
   size_t numLiveObjects = heap.numLiveObjects;
 
@@ -533,7 +536,7 @@ bool Collector::collect()
         }
       }
     }
-    
+
     curBlock->usedCells = usedCells;
     curBlock->freeList = freeList;
 
@@ -549,7 +552,7 @@ bool Collector::collect()
         block--; // Don't move forward a step in this case
 
         if (heap.numBlocks > MIN_ARRAY_SIZE && heap.usedBlocks < heap.numBlocks / LOW_WATER_FACTOR) {
-          heap.numBlocks = heap.numBlocks / GROWTH_FACTOR; 
+          heap.numBlocks = heap.numBlocks / GROWTH_FACTOR;
           heap.blocks = (CollectorBlock **)fastRealloc(heap.blocks, heap.numBlocks * sizeof(CollectorBlock *));
         }
       }
@@ -558,11 +561,11 @@ bool Collector::collect()
 
   if (heap.numLiveObjects != numLiveObjects)
     heap.firstBlockWithPossibleSpace = 0;
-  
+
   size_t cell = 0;
   while (cell < heap.usedOversizeCells) {
     JSCell *imp = (JSCell *)heap.oversizeCells[cell];
-    
+
     if (!imp->m_marked && (currentThreadIsMainThread || imp->m_destructorIsThreadSafe)) {
       imp->~JSCell();
 #if DEBUG_COLLECTOR
@@ -578,7 +581,7 @@ bool Collector::collect()
       numLiveObjects--;
 
       if (heap.numOversizeCells > MIN_ARRAY_SIZE && heap.usedOversizeCells < heap.numOversizeCells / LOW_WATER_FACTOR) {
-        heap.numOversizeCells = heap.numOversizeCells / GROWTH_FACTOR; 
+        heap.numOversizeCells = heap.numOversizeCells / GROWTH_FACTOR;
         heap.oversizeCells = (CollectorCell **)fastRealloc(heap.oversizeCells, heap.numOversizeCells * sizeof(CollectorCell *));
       }
     } else {
@@ -586,20 +589,20 @@ bool Collector::collect()
       cell++;
     }
   }
-  
+
   bool deleted = heap.numLiveObjects != numLiveObjects;
 
   heap.numLiveObjects = numLiveObjects;
   heap.numLiveObjectsAtLastCollect = numLiveObjects;
-  
+
   memoryFull = (numLiveObjects >= KJS_MEM_LIMIT);
 
   return deleted;
 }
 
-size_t Collector::size() 
+size_t Collector::size()
 {
-  return heap.numLiveObjects; 
+  return heap.numLiveObjects;
 }
 
 #ifdef KJS_DEBUG_MEM

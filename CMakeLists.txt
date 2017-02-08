@@ -24,17 +24,38 @@ include_directories(
   "${PROJECT_SOURCE_DIR}"
   "${PROJECT_SOURCE_DIR}/kjs"
   "${PROJECT_SOURCE_DIR}/pcre"
-  "${PROJECT_SOURCE_DIR}/build/DerivedSources/JavaScriptCore"
+  "${CMAKE_CURRENT_BINARY_DIR}/DerivedSources/JavaScriptCore"
   )
 
-add_executable(dftables "${PROJECT_SOURCE_DIR}/pcre/dftables.c")
+if (CMAKE_CROSSCOMPILING)
+  set(IMPORT_PATH "IMPORTFILE-NOTFOUND" CACHE FILEPATH "Point it to the export file path from a native build")
+  file(TO_CMAKE_PATH "${IMPORT_PATH}" IMPORT_PATH_CMAKE)
+  include(${IMPORT_PATH_CMAKE}/dftablesTargets.cmake)
+endif()
+
+if (NOT CMAKE_CROSSCOMPILING)
+  add_executable(dftables "${PROJECT_SOURCE_DIR}/pcre/dftables.c")
+  export(TARGETS dftables FILE "${CMAKE_CURRENT_BINARY_DIR}/dftablesTargets.cmake")
+endif()
 
 add_custom_command(
   OUTPUT DerivedSources/JavaScriptCore/grammar.cpp
-  DEPENDS dftables
   COMMAND sh "${PROJECT_SOURCE_DIR}/make-generated-sources.sh"
   ARGS "${PROJECT_SOURCE_DIR}"
   )
+
+file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/DerivedSources/JavaScriptCore")
+
+add_custom_command(
+  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/DerivedSources/JavaScriptCore/chartables.c
+  DEPENDS dftables
+  COMMAND dftables
+  ARGS chartables.c
+  WORKING_DIRECTORY DerivedSources/JavaScriptCore
+  )
+
+add_custom_target(
+  chartables_file ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/DerivedSources/JavaScriptCore/chartables.c)
 
 add_library(js SHARED
   DerivedSources/JavaScriptCore/grammar.cpp
@@ -103,12 +124,14 @@ add_library(js SHARED
 
   )
 
-set_target_properties(js PROPERTIES COMPILE_FLAGS "-m32" LINK_FLAGS "-m32")
+add_dependencies(js chartables_file)
 
-set(CMAKE_CXX_FLAGS "-s -Os -fno-exceptions -fno-rtti -fno-stack-protector -ffunction-sections -fdata-sections -fno-unroll-loops")
-set(CMAKE_EXE_LINKER_FLAGS "-s")
+# set_target_properties(js PROPERTIES COMPILE_FLAGS "-m32" LINK_FLAGS "-m32")
 
-# add test executable
-add_executable(testkjs "${PROJECT_SOURCE_DIR}/kjs/testkjs.cpp")
-set_target_properties(testkjs PROPERTIES COMPILE_FLAGS "-m32" LINK_FLAGS "-m32")
-target_link_libraries(testkjs js)
+# set(CMAKE_CXX_FLAGS "-s -Os -fno-exceptions -fno-rtti -fno-stack-protector -ffunction-sections -fdata-sections -fno-unroll-loops")
+# set(CMAKE_EXE_LINKER_FLAGS "-s")
+
+# # add test executable
+# add_executable(testkjs "${PROJECT_SOURCE_DIR}/kjs/testkjs.cpp")
+# set_target_properties(testkjs PROPERTIES COMPILE_FLAGS "-m32" LINK_FLAGS "-m32")
+# target_link_libraries(testkjs js)

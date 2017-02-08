@@ -23,6 +23,8 @@
 
 #include "internal.h"
 
+#include <time.h>
+
 namespace KJS {
 
     class FunctionPrototype;
@@ -31,12 +33,12 @@ namespace KJS {
     class DateInstance : public JSObject {
     public:
         DateInstance(JSObject *proto);
-        
+
         bool getTime(tm &t, int &gmtoffset) const;
         bool getUTCTime(tm &t) const;
         bool getTime(double &ms, int &gmtoffset) const;
         bool getUTCTime(double &ms) const;
-        
+
         virtual const ClassInfo *classInfo() const { return &info; }
         static const ClassInfo info;
     };
@@ -64,9 +66,9 @@ namespace KJS {
     class DateProtoFunc : public InternalFunctionImp {
     public:
         DateProtoFunc(ExecState *, int i, int len, const Identifier& date);
-        
+
         virtual JSValue *callAsFunction(ExecState *, JSObject *thisObj, const List &args);
-        
+
         enum { ToString, ToDateString, ToTimeString, ToLocaleString,
             ToLocaleDateString, ToLocaleTimeString, ValueOf, GetTime,
             GetFullYear, GetMonth, GetDate, GetDay, GetHours, GetMinutes,
@@ -79,7 +81,7 @@ namespace KJS {
         int id;
         bool utc;
     };
-    
+
     /**
      * @internal
      *
