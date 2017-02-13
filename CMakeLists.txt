@@ -57,8 +57,8 @@ add_custom_command(
 add_custom_target(
   chartables_file ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/DerivedSources/JavaScriptCore/chartables.c)
 
-add_library(js SHARED
-  DerivedSources/JavaScriptCore/grammar.cpp
+set(libjs_src
+    DerivedSources/JavaScriptCore/grammar.cpp
   kjs/array_object.cpp
   kjs/bool_object.cpp
   kjs/collector.cpp
@@ -124,9 +124,27 @@ add_library(js SHARED
 
   )
 
-add_dependencies(js chartables_file)
+add_library(libjs_obj OBJECT ${libjs_src})
+add_dependencies(libjs_obj chartables_file)
 
-# set_target_properties(js PROPERTIES COMPILE_FLAGS "-m32" LINK_FLAGS "-m32")
+#set_property(TARGET ${libjs_obj} PROPERTY POSITION_INDEPENDENT_CODE 1)
+
+add_library(js_shared SHARED $<TARGET_OBJECTS:libjs_obj>)
+add_library(js_static STATIC $<TARGET_OBJECTS:libjs_obj>)
+
+# Currently the test app doesn't work when built for x86_64, so we
+# force 32 bit on the host...this is probably confusing since the
+# output director is determined before we make the decision here to
+# complile this as 32 bit. I don't expect this workaround to remain in
+# place for long.
+if (NOT CMAKE_CROSSCOMPILING)
+  set_target_properties(libjs_obj PROPERTIES COMPILE_FLAGS "-m32" LINK_FLAGS "-m32")
+  set_target_properties(js_shared PROPERTIES COMPILE_FLAGS "-m32" LINK_FLAGS "-m32")
+  set_target_properties(js_static PROPERTIES COMPILE_FLAGS "-m32" LINK_FLAGS "-m32")
+endif()
+
+set_target_properties(js_shared PROPERTIES OUTPUT_NAME js)
+set_target_properties(js_static PROPERTIES OUTPUT_NAME js)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Os")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility=hidden")
@@ -138,9 +156,9 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ffunction-sections")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fdata-sections")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-unroll-loops")
 
-#set(CMAKE_EXE_LINKER_FLAGS "-s")
-
-# # add test executable
-#add_executable(testkjs "${PROJECT_SOURCE_DIR}/kjs/testkjs.cpp")
-#set_target_properties(testkjs PROPERTIES COMPILE_FLAGS "-m32" LINK_FLAGS "-m32")
-#target_link_libraries(testkjs js)
+# add test executable
+if (NOT CMAKE_CROSSCOMPILING)
+  add_executable(testkjs "${PROJECT_SOURCE_DIR}/kjs/testkjs.cpp")
+  set_target_properties(testkjs PROPERTIES COMPILE_FLAGS "-m32" LINK_FLAGS "-m32")
+  target_link_libraries(testkjs js_static)
+endif()
