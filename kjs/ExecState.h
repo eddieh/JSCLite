@@ -30,12 +30,12 @@
 namespace KJS {
     class Context;
     class Interpreter;
-    
+
     class Interpreter;
     class FunctionImp;
     class RuntimeMethodImp;
     class GlobalFuncImp;
-    
+
   /**
    * Represents the current state of script execution. This object allows you
    * obtain a handle the interpreter that is currently executing the script,
@@ -80,7 +80,7 @@ namespace KJS {
         : m_interpreter(interp)
         , m_context(con)
         , m_exception(0)
-    { 
+    {
     }
     Interpreter* m_interpreter;
     Context* m_context;

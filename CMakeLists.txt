@@ -128,10 +128,19 @@ add_dependencies(js chartables_file)
 
 # set_target_properties(js PROPERTIES COMPILE_FLAGS "-m32" LINK_FLAGS "-m32")
 
-# set(CMAKE_CXX_FLAGS "-s -Os -fno-exceptions -fno-rtti -fno-stack-protector -ffunction-sections -fdata-sections -fno-unroll-loops")
-# set(CMAKE_EXE_LINKER_FLAGS "-s")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Os")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility=hidden")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility-inlines-hidden")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-exceptions")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-rtti")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-stack-protector")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ffunction-sections")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fdata-sections")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-unroll-loops")
+
+#set(CMAKE_EXE_LINKER_FLAGS "-s")
 
 # # add test executable
-# add_executable(testkjs "${PROJECT_SOURCE_DIR}/kjs/testkjs.cpp")
-# set_target_properties(testkjs PROPERTIES COMPILE_FLAGS "-m32" LINK_FLAGS "-m32")
-# target_link_libraries(testkjs js)
+#add_executable(testkjs "${PROJECT_SOURCE_DIR}/kjs/testkjs.cpp")
+#set_target_properties(testkjs PROPERTIES COMPILE_FLAGS "-m32" LINK_FLAGS "-m32")
+#target_link_libraries(testkjs js)

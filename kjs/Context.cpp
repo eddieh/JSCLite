@@ -27,19 +27,19 @@
 namespace KJS {
 
 // ECMA 10.2
-Context::Context(JSObject* glob, Interpreter* interpreter, JSObject* thisV, 
-                 FunctionBodyNode* currentBody, CodeType type, Context* callingCon, 
+Context::Context(JSObject* glob, Interpreter* interpreter, JSObject* thisV,
+                 FunctionBodyNode* currentBody, CodeType type, Context* callingCon,
                  FunctionImp* func, const List* args)
     : m_interpreter(interpreter)
     , m_currentBody(currentBody)
     , m_function(func)
     , m_arguments(args)
     , m_iterationDepth(0)
-    , m_switchDepth(0) 
+    , m_switchDepth(0)
 {
     m_codeType = type;
     m_callingContext = callingCon;
-    
+
     // create and initialize activation object (ECMA 10.1.6)
     if (type == FunctionCode || type == AnonymousCode ) {
         m_activation = new ActivationImp(func, *args);
@@ -48,7 +48,7 @@ Context::Context(JSObject* glob, Interpreter* interpreter, JSObject* thisV,
         m_activation = 0;
         m_variable = glob;
     }
-    
+
     // ECMA 10.2
     switch(type) {
     case EvalCode:
@@ -77,7 +77,7 @@ Context::Context(JSObject* glob, Interpreter* interpreter, JSObject* thisV,
         m_thisVal = thisV;
         break;
     }
-    
+
     m_interpreter->setContext(this);
 }
 
