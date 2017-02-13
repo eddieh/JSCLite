@@ -5,10 +5,10 @@ BUILD_HOST_DIR = $(BUILD_BASE_DIR)/$(BUILD_HOST_NAME).$(BUILD_HOST_ARCH)
 
 CROSS_BUILD_CMAKE_FLAGS = -DIMPORT_PATH=${PWD}/$(BUILD_HOST_DIR)
 
-ANDROID_ARCHS = armeabi
+ANDROID_ARCHS = armeabi armeabi-v7a
 ANDROID_BUILD_BASE_DIR = $(BUILD_BASE_DIR)/Android
 ANDROID_CMAKE_FLAGS = $(CROSS_BUILD_CMAKE_FLAGS) \
-	-DCMAKE_TOOLCHAIN_FILE="toolchains/Android-arm.cmake"
+	-DCMAKE_TOOLCHAIN_FILE="toolchains/android.cmake"
 
 # by default just build for the hose platform & architecture
 all: host
@@ -21,7 +21,9 @@ host:
 android: host
 	for arch in $(ANDROID_ARCHS); do \
 		cmake -E make_directory $(ANDROID_BUILD_BASE_DIR).$$arch && \
-		cmake -E chdir $(ANDROID_BUILD_BASE_DIR).$$arch cmake ../.. $(ANDROID_CMAKE_FLAGS) && \
+		cmake -E chdir $(ANDROID_BUILD_BASE_DIR).$$arch cmake ../.. \
+			-DANDROID_ARCH_ABI=$$arch \
+			$(ANDROID_CMAKE_FLAGS) && \
 		cmake --build $(ANDROID_BUILD_BASE_DIR).$$arch ; done
 
 clean:
