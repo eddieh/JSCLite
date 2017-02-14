@@ -146,6 +146,9 @@ endif()
 set_target_properties(js_shared PROPERTIES OUTPUT_NAME js)
 set_target_properties(js_static PROPERTIES OUTPUT_NAME js)
 
+# suppress "replacement function 'operator new' cannot be declared 'inline'" warnings
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-inline-new-delete")
+
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Os")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility=hidden")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility-inlines-hidden")
