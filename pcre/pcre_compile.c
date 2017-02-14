@@ -360,7 +360,7 @@ static const unsigned char ebcdic_chartab[] = { /* chartable partial dup */
 /* Definition to allow mutual recursion */
 
 static BOOL
-  compile_regex(int, int, int *, uschar **, const pcre_uchar **, const pcre_uchar const*, int *, BOOL, int,
+  compile_regex(int, int, int *, uschar **, const pcre_uchar **, const pcre_uchar *, int *, BOOL, int,
     int *, int *, branch_chain *, compile_data *);
 
 
@@ -388,7 +388,7 @@ Returns:         zero or positive => a data character
 */
 
 static int
-check_escape(const pcre_uchar **ptrptr, const pcre_uchar const* patternEnd, int *errorcodeptr, int bracount,
+check_escape(const pcre_uchar **ptrptr, const pcre_uchar *patternEnd, int *errorcodeptr, int bracount,
   int options, BOOL isclass)
 {
 const pcre_uchar *ptr = *ptrptr;
@@ -621,7 +621,7 @@ Returns:     value from ucp_type_table, or -1 for an invalid type
 */
 
 static int
-get_ucp(const pcre_uchar **ptrptr, const pcre_uchar const* patternEnd, BOOL *negptr, int *errorcodeptr)
+get_ucp(const pcre_uchar **ptrptr, const pcre_uchar *patternEnd, BOOL *negptr, int *errorcodeptr)
 {
 int c, i, bot, top;
 const pcre_uchar *ptr = *ptrptr;
@@ -715,7 +715,7 @@ Returns:    TRUE or FALSE
 */
 
 static BOOL
-is_counted_repeat(const pcre_uchar *p, const pcre_uchar const* patternEnd)
+is_counted_repeat(const pcre_uchar *p, const pcre_uchar *patternEnd)
 {
 if (p >= patternEnd || (DIGITAB(*p) & ctype_digit) == 0)
     return FALSE;
@@ -1642,7 +1642,7 @@ Returns:         TRUE on success
 
 static BOOL
 compile_branch(int *optionsptr, int *brackets, uschar **codeptr,
-  const pcre_uchar **ptrptr, const pcre_uchar const* patternEnd, int *errorcodeptr, int *firstbyteptr,
+  const pcre_uchar **ptrptr, const pcre_uchar *patternEnd, int *errorcodeptr, int *firstbyteptr,
   int *reqbyteptr, branch_chain *bcptr, compile_data *cd)
 {
 int repeat_type, op_type;
@@ -3573,7 +3573,7 @@ Returns:      TRUE on success
 
 static BOOL
 compile_regex(int options, int oldims, int *brackets, uschar **codeptr,
-  const pcre_uchar **ptrptr, const pcre_uchar const* patternEnd, int *errorcodeptr, BOOL lookbehind, int skipbytes,
+  const pcre_uchar **ptrptr, const pcre_uchar *patternEnd, int *errorcodeptr, BOOL lookbehind, int skipbytes,
   int *firstbyteptr, int *reqbyteptr, branch_chain *bcptr, compile_data *cd)
 {
 const pcre_uchar *ptr = *ptrptr;
@@ -4116,12 +4116,12 @@ for any counted white space if an "extended" flag setting appears late in the
 pattern. We can't be so clever for #-comments. */
 
 ptr = (const pcre_uchar *)(pattern - 1);
-const pcre_uchar const* patternEnd = (const pcre_uchar *)(pattern + patternLength);
+const pcre_uchar *patternEnd = (const pcre_uchar *)(pattern + patternLength);
 
 while (++ptr < patternEnd)
   {
   c = *ptr;
-  
+
   int min, max;
   int class_optcount;
   int bracket_length;
