@@ -35,8 +35,8 @@ class JSValue;
 class UString;
 
 /*
- * A JSValue * is either a pointer to a cell (a heap-allocated object) or an immediate (a type-tagged 
- * IEEE floating point bit pattern masquerading as a pointer). The low two bits in a JSValue * are available 
+ * A JSValue * is either a pointer to a cell (a heap-allocated object) or an immediate (a type-tagged
+ * IEEE floating point bit pattern masquerading as a pointer). The low two bits in a JSValue * are available
  * for type tagging because allocator alignment guarantees they will be 00 in cell pointers.
  *
  * For example, on a 32 bit system:
@@ -47,12 +47,12 @@ class UString;
  * JSImmediate:   XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX                 TT
  *             [ high 30 bits: IEEE encoded float ] [ low 2 bits -- type tag ]
  *
- * The bit "payload" (the hight 30 bits) of a non-numeric immediate is its numeric equivalent. For example, 
+ * The bit "payload" (the hight 30 bits) of a non-numeric immediate is its numeric equivalent. For example,
  * the payload of null is 0.0. This makes JSValue::toNumber() a simple bitmask for all immediates.
  *
- * Notice that the JSType value of NullType is 4, which requires 3 bits to encode. Since we only have 2 bits 
- * available for type tagging, we tag the null immediate with UndefinedType, and JSImmediate::type() has 
- * to sort them out. Null and Undefined don't otherwise get confused because the numeric value of Undefined is 
+ * Notice that the JSType value of NullType is 4, which requires 3 bits to encode. Since we only have 2 bits
+ * available for type tagging, we tag the null immediate with UndefinedType, and JSImmediate::type() has
+ * to sort them out. Null and Undefined don't otherwise get confused because the numeric value of Undefined is
  * NaN, not 0.0.
  */
 
@@ -62,17 +62,17 @@ public:
     {
         return getTag(v) != 0;
     }
-    
+
     static bool isNumber(const JSValue *v)
     {
         return (getTag(v) == NumberType);
     }
-    
+
     static bool isBoolean(const JSValue *v)
     {
         return (getTag(v) == BooleanType);
     }
-    
+
     // Since we have room for only 3 unique tags, null and undefined have to share.
     static bool isUndefinedOrNull(const JSValue *v)
     {
@@ -81,71 +81,64 @@ public:
 
     static JSValue *fromDouble(double d)
     {
-        if (is32bit()) {
-            FloatUnion floatUnion;
-            floatUnion.asFloat = d;
-            
-            // check for data loss from tagging
-            if ((floatUnion.asBits & TagMask) != 0)
-              return 0;
-            
-            // check for data loss from conversion to float
-            DoubleUnion doubleUnion1, doubleUnion2;
-            doubleUnion1.asDouble = floatUnion.asFloat;
-            doubleUnion2.asDouble = d;
-            if (doubleUnion1.asBits != doubleUnion2.asBits)
-                return 0;
-            
-            return tag(floatUnion.asBits, NumberType);
-        } else if (is64bit()) {
-            DoubleUnion doubleUnion;
-            doubleUnion.asDouble = d;
-            
-            // check for data loss from tagging
-            if ((doubleUnion.asBits & TagMask) != 0)
-                return 0;
+#if USE(JSVALUE32_64)
+        FloatUnion floatUnion;
+        floatUnion.asFloat = d;
 
-            return tag(doubleUnion.asBits, NumberType);
-        } else {
-            // could just return 0 without aborting, but nicer to be explicit about not supporting the platform well
-            abort();
+        // check for data loss from tagging
+        if ((floatUnion.asBits & TagMask) != 0)
             return 0;
-        }
+
+        // check for data loss from conversion to float
+        DoubleUnion doubleUnion1, doubleUnion2;
+        doubleUnion1.asDouble = floatUnion.asFloat;
+        doubleUnion2.asDouble = d;
+        if (doubleUnion1.asBits != doubleUnion2.asBits)
+            return 0;
+
+        return tag(floatUnion.asBits, NumberType);
+#elif USE(JSVALUE_64)
+        DoubleUnion doubleUnion;
+        doubleUnion.asDouble = d;
+
+        // check for data loss from tagging
+        if ((doubleUnion.asBits & TagMask) != 0)
+            return 0;
+
+        return tag(doubleUnion.asBits, NumberType);
+#endif
     }
-    
+
     static double toDouble(const JSValue *v)
     {
         ASSERT(isImmediate(v));
-        
-        if (is32bit()) {
-            FloatUnion floatUnion;
-            floatUnion.asBits = unTag(v);
-            return floatUnion.asFloat;
-        } else if (is64bit()) {
-            DoubleUnion doubleUnion;
-            doubleUnion.asBits = unTag(v);
-            return doubleUnion.asDouble;
-        } else {
-            abort();
-            return 0;
-        }
+
+#if USE(JSVALUE32_64)
+        FloatUnion floatUnion;
+        floatUnion.asBits = unTag(v);
+        return floatUnion.asFloat;
+#elif USE(JSVALUE64)
+        DoubleUnion doubleUnion;
+        doubleUnion.asBits = unTag(v);
+        return doubleUnion.asDouble;
+#endif
     }
 
     static bool toBoolean(const JSValue *v)
     {
         ASSERT(isImmediate(v));
-        
+
         uintptr_t bits = unTag(v);
         if ((bits << 1) == 0) // -0.0 has the sign bit set
             return false;
 
         return bits != NanAsBits();
     }
-    
+
     static JSObject *toObject(const JSValue *, ExecState *);
     static UString toString(const JSValue *);
     static JSType type(const JSValue *);
-    
+
     // It would nice just to use fromDouble() to create these values, but that would prevent them from
     // turning into compile-time constants.
     static JSValue *trueImmediate() { return tag(oneAsBits(), BooleanType); }
@@ -153,25 +146,25 @@ public:
     static JSValue *NaNImmediate() { return tag(NanAsBits(), NumberType); }
     static JSValue *undefinedImmediate() { return tag(NanAsBits(), UndefinedType); }
     static JSValue *nullImmediate() { return tag(zeroAsBits(), UndefinedType); }
-    
+
 private:
     static const uintptr_t TagMask = 3; // type tags are 2 bits long
-    
+
     static JSValue *tag(uintptr_t bits, uintptr_t tag)
     {
         return reinterpret_cast<JSValue *>(bits | tag);
     }
-    
+
     static uintptr_t unTag(const JSValue *v)
     {
         return reinterpret_cast<uintptr_t>(v) & ~TagMask;
     }
-    
+
     static uintptr_t getTag(const JSValue *v)
     {
         return reinterpret_cast<uintptr_t>(v) & TagMask;
     }
-    
+
     // NOTE: With f-strict-aliasing enabled, unions are the only safe way to do type masquerading.
 
     union FloatUnion {
@@ -184,31 +177,15 @@ private:
         double   asDouble;
     };
 
-    // we support 32-bit platforms with sizes like this
-    static bool is32bit() 
-    {
-        return sizeof(float) == sizeof(uint32_t) && sizeof(double) == sizeof(uint64_t) && sizeof(uintptr_t) == sizeof(uint32_t);
-    }
-
-    // we support 64-bit platforms with sizes like this
-    static bool is64bit()
-    {
-        return sizeof(float) == sizeof(uint32_t) && sizeof(double) == sizeof(uint64_t) && sizeof(uintptr_t) == sizeof(uint64_t);
-    }
-
     static uintptr_t NanAsBits()
     {
+#if USE(JSVALUE32_64)
         const uint32_t NaN32AsBits = 0x7fc00000;
+        return NaN32AsBits;
+#elif USE(JSVALUE64)
         const uint64_t NaN64AsBits = 0x7ff80000ULL << 32;
-
-        if (JSImmediate::is32bit())
-            return NaN32AsBits;
-        else if (JSImmediate::is64bit())
-            return NaN64AsBits;
-        else {
-            abort();
-            return 0;
-        }
+        return NaN64AsBits;
+#endif
     }
 
     static uintptr_t zeroAsBits()
@@ -218,17 +195,13 @@ private:
 
     static uintptr_t oneAsBits()
     {
+#if USE(JSVALUE32_64)
         const uint32_t One32AsBits = 0x3f800000;
+        return One32AsBits;
+#elif USE(JSVALUE64)
         const uint64_t One64AsBits = 0x3ff00000ULL << 32;
-
-        if (JSImmediate::is32bit())
-            return One32AsBits;
-        else if (JSImmediate::is64bit())
-            return One64AsBits;
-        else {
-            abort();
-            return 0;
-        }
+        return One64AsBits;
+#endif
     }
 };
 
