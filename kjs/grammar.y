@@ -94,7 +94,6 @@ static Node *makeDeleteNode(Node *expr);
 
 /* literals */
 %token NULLTOKEN TRUETOKEN FALSETOKEN
-%token STRING NUMBER
 
 /* keywords */
 %token BREAK CASE DEFAULT FOR NEW VAR CONST CONTINUE
@@ -848,11 +847,11 @@ SourceElement:
     FunctionDeclaration                 { $$ = $1; }
   | Statement                           { $$ = $1; }
 ;
- 
+
 %%
 
 static bool makeAssignNode(Node*& result, Node *loc, Operator op, Node *expr)
-{ 
+{
     Node *n = loc->nodeInsideAllParens();
 
     if (!n->isLocation())
@@ -874,12 +873,12 @@ static bool makeAssignNode(Node*& result, Node *loc, Operator op, Node *expr)
 }
 
 static bool makePrefixNode(Node*& result, Node *expr, Operator op)
-{ 
+{
     Node *n = expr->nodeInsideAllParens();
 
     if (!n->isLocation())
         return false;
-    
+
     if (n->isResolveNode()) {
         ResolveNode *resolve = static_cast<ResolveNode *>(n);
         result = new PrefixResolveNode(resolve->identifier(), op);
@@ -896,12 +895,12 @@ static bool makePrefixNode(Node*& result, Node *expr, Operator op)
 }
 
 static bool makePostfixNode(Node*& result, Node *expr, Operator op)
-{ 
+{
     Node *n = expr->nodeInsideAllParens();
 
     if (!n->isLocation())
         return false;
-    
+
     if (n->isResolveNode()) {
         ResolveNode *resolve = static_cast<ResolveNode *>(n);
         result = new PostfixResolveNode(resolve->identifier(), op);
@@ -920,7 +919,7 @@ static bool makePostfixNode(Node*& result, Node *expr, Operator op)
 static Node *makeFunctionCallNode(Node *func, ArgumentsNode *args)
 {
     Node *n = func->nodeInsideAllParens();
-    
+
     if (!n->isLocation())
         return new FunctionCallValueNode(func, args);
     else if (n->isResolveNode()) {
@@ -956,7 +955,7 @@ static Node *makeTypeOfNode(Node *expr)
 static Node *makeDeleteNode(Node *expr)
 {
     Node *n = expr->nodeInsideAllParens();
-    
+
     if (!n->isLocation())
         return new DeleteValueNode(expr);
     else if (n->isResolveNode()) {
@@ -975,15 +974,15 @@ static Node *makeDeleteNode(Node *expr)
 static bool makeGetterOrSetterPropertyNode(PropertyNode*& result, Identifier& getOrSet, Identifier& name, ParameterNode *params, FunctionBodyNode *body)
 {
     PropertyNode::Type type;
-    
+
     if (getOrSet == "get")
         type = PropertyNode::Getter;
     else if (getOrSet == "set")
         type = PropertyNode::Setter;
     else
         return false;
-    
-    result = new PropertyNode(new PropertyNameNode(name), 
+
+    result = new PropertyNode(new PropertyNameNode(name),
                               new FuncExprNode(Identifier::null(), body, params), type);
 
     return true;
