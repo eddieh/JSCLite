@@ -30,6 +30,7 @@
 // PLATFORM handles OS, operating environment, graphics API, and CPU
 #define PLATFORM(KX_FEATURE) (defined( KXMLCORE_PLATFORM_##KX_FEATURE ) && KXMLCORE_PLATFORM_##KX_FEATURE)
 #define COMPILER(KX_FEATURE) (defined( KXMLCORE_COMPILER_##KX_FEATURE ) && KXMLCORE_COMPILER_##KX_FEATURE)
+#define CPU(KX_FEATURE) (defined( KXMLCORE_CPU_##KX_FEATURE ) && KXMLCORE_CPU_##KX_FEATURE)
 #define HAVE(KX_FEATURE) (defined( HAVE_##KX_FEATURE ) && HAVE_##KX_FEATURE)
 #define USE(KX_FEATURE) (defined( KXMLCORE_USE_##KX_FEATURE ) && KXMLCORE_USE_##KX_FEATURE)
 
@@ -92,46 +93,134 @@
 #endif
 
 
-// CPU
+/* === CPU() - the target CPU architecture ==== */
 
-// PLATFORM(PPC)
-#if   defined(__ppc__)     \
-   || defined(__PPC__)     \
-   || defined(__powerpc__) \
-   || defined(__powerpc)   \
-   || defined(__POWERPC__) \
-   || defined(_M_PPC)      \
-   || defined(__PPC)
-#define KXMLCORE_PLATFORM_PPC 1
-#define KXMLCORE_PLATFORM_BIG_ENDIAN 1
+/* CPU(ALPHA) - DEC Alpha */
+#if defined(__alpha__)
+#define KXMLCORE_CPU_ALPHA 1
 #endif
 
-// PLATFORM(PPC64)
-#if   defined(__ppc64__) \
-   || defined(__PPC64__)
-#define KXMLCORE_PLATFORM_PPC64 1
-#define KXMLCORE_PLATFORM_BIG_ENDIAN 1
+/* CPU(IA64) - Itanium / IA-64 */
+#if defined(__ia64__)
+#define KXMLCORE_CPU_IA64 1
+/* 32-bit mode on Itanium */
+#if !defined(__LP64__)
+#define KXMLCORE_CPU_IA64_32 1
+#endif
 #endif
 
-#if defined(arm)
-#define KXMLCORE_PLATFORM_ARM 1
-#define KXMLCORE_PLATFORM_MIDDLE_ENDIAN 1
+/* CPU(PPC) - PowerPC 32-bit */
+#if    defined(__ppc__)     \
+    || defined(__PPC__)     \
+    || defined(__powerpc__) \
+    || defined(__powerpc)   \
+    || defined(__POWERPC__) \
+    || defined(_M_PPC)      \
+    || defined(__PPC)
+#define KXMLCORE_CPU_PPC 1
+#define KXMLCORE_CPU_BIG_ENDIAN 1
 #endif
 
-// PLATFORM(X86)
-#if   defined(__i386__) \
-   || defined(i386)     \
-   || defined(_M_IX86)  \
-   || defined(_X86_)    \
-   || defined(__THW_INTEL)
-#define KXMLCORE_PLATFORM_X86 1
+/* CPU(PPC64) - PowerPC 64-bit */
+#if    defined(__ppc64__) \
+    || defined(__PPC64__)
+#define KXMLCORE_CPU_PPC64 1
+#define KXMLCORE_CPU_BIG_ENDIAN 1
 #endif
 
-// PLATFORM(X86_64)
-#if   defined(__x86_64__) \
-   || defined(__ia64__)
-#define KXMLCORE_PLATFORM_X86_64 1
+/* CPU(SH4) - SuperH SH-4 */
+#if defined(__SH4__)
+#define KXMLCORE_CPU_SH4 1
 #endif
+
+/* CPU(SPARC32) - SPARC 32-bit */
+#if defined(__sparc) && !defined(__arch64__) || defined(__sparcv8)
+#define KXMLCORE_CPU_SPARC32 1
+#define KXMLCORE_CPU_BIG_ENDIAN 1
+#endif
+
+/* CPU(SPARC64) - SPARC 64-bit */
+#if defined(__sparc__) && defined(__arch64__) || defined (__sparcv9)
+#define KXMLCORE_CPU_SPARC64 1
+#define KXMLCORE_CPU_BIG_ENDIAN 1
+#endif
+
+/* CPU(SPARC) - any SPARC, true for CPU(SPARC32) and CPU(SPARC64) */
+#if CPU(SPARC32) || CPU(SPARC64)
+#define KXMLCORE_CPU_SPARC 1
+#endif
+
+/* CPU(S390X) - S390 64-bit */
+#if defined(__s390x__)
+#define KXMLCORE_CPU_S390X 1
+#define KXMLCORE_CPU_BIG_ENDIAN 1
+#endif
+
+/* CPU(S390) - S390 32-bit */
+#if defined(__s390__)
+#define KXMLCORE_CPU_S390 1
+#define KXMLCORE_CPU_BIG_ENDIAN 1
+#endif
+
+/* CPU(X86) - i386 / x86 32-bit */
+#if    defined(__i386__) \
+    || defined(i386)     \
+    || defined(_M_IX86)  \
+    || defined(_X86_)    \
+    || defined(__THW_INTEL)
+#define KXMLCORE_CPU_X86 1
+#endif
+
+/* CPU(X86_64) - AMD64 / Intel64 / x86_64 64-bit */
+#if    defined(__x86_64__) \
+    || defined(_M_X64)
+#define KXMLCORE_CPU_X86_64 1
+#endif
+
+/* CPU(ARM) - ARM, any version*/
+#if    defined(arm) \
+    || defined(__arm__) \
+    || defined(ARM) \
+    || defined(_ARM_)
+#define KXMLCORE_CPU_ARM 1
+
+#if defined(__ARMEB__) || (COMPILER(RVCT) && defined(__BIG_ENDIAN))
+#define KXMLCORE_CPU_BIG_ENDIAN 1
+
+#elif  !defined(__ARM_EABI__) \
+    && !defined(__EABI__) \
+    && !defined(__VFP_FP__) \
+    && !defined(_WIN32_WCE) \
+    && !defined(ANDROID)
+#define KXMLCORE_CPU_MIDDLE_ENDIAN 1
+
+#endif
+
+#if defined(__ARM_NEON__) && !defined(KXMLCORE_CPU_ARM_NEON)
+#define KXMLCORE_CPU_ARM_NEON 1
+#endif
+
+/* CPU(ARM64) - ARM, 64 */
+#if    defined(__aarch64__)
+#define KXMLCORE_CPU_ARM64 1
+#endif
+
+#endif /* ARM */
+
+#if !defined(KXMLCORE_USE_JSVALUE64) && !defined(KXMLCORE_USE_JSVALUE32_64)
+#if (CPU(X86_64) && (PLATFORM(UNIX) || PLATFORM(WINDOWS))) \
+    || (CPU(IA64) && !CPU(IA64_32)) \
+    || CPU(ALPHA) \
+    || CPU(SPARC64) \
+    || CPU(S390X) \
+    || CPU(PPC64) \
+    || CPU(ARM64)
+#define KXMLCORE_USE_JSVALUE64 1
+#else
+#define KXMLCORE_USE_JSVALUE32_64 1
+#endif
+#endif /* !defined(KXMLCORE_USE_JSVALUE64) && !defined(KXMLCORE_USE_JSVALUE32_64) */
+
 
 // Compiler
 

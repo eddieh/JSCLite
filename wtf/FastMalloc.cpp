@@ -1,10 +1,10 @@
 // Copyright (c) 2005, Google Inc.
 // All rights reserved.
-// 
+//
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
 // met:
-// 
+//
 //     * Redistributions of source code must retain the above copyright
 // notice, this list of conditions and the following disclaimer.
 //     * Redistributions in binary form must reproduce the above
@@ -14,7 +14,7 @@
 //     * Neither the name of Google Inc. nor the names of its
 // contributors may be used to endorse or promote products derived from
 // this software without specific prior written permission.
-// 
+//
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 // "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
 // LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
@@ -79,8 +79,8 @@
 #endif
 
 namespace WTF {
-    
-void *fastMalloc(size_t n) 
+
+void *fastMalloc(size_t n)
 {
     return malloc(n);
 }
@@ -101,7 +101,7 @@ void *fastRealloc(void* p, size_t n)
 }
 
 #if !PLATFORM(WIN_OS)
-void fastMallocRegisterThread(pthread_t) 
+void fastMallocRegisterThread(pthread_t)
 {
 }
 #endif
@@ -225,7 +225,7 @@ static size_t class_to_size[kNumClasses];
 static size_t class_to_pages[kNumClasses];
 
 // Return floor(log2(n)) for n > 0.
-#if PLATFORM(X86) && COMPILER(GCC)
+#if CPU(X86) && COMPILER(GCC)
 static inline int LgFloor(size_t n) {
   // "ro" for the input spec means the input can come from either a
   // register ("r") or offsetable memory ("o").
@@ -238,20 +238,20 @@ static inline int LgFloor(size_t n) {
   return result;
 }
 
-#elif PLATFORM(PPC) && COMPILER(GCC)
+#elif CPU(PPC) && COMPILER(GCC)
 static inline int LgFloor(size_t n) {
   // "r" for the input spec means the input must come from a
   // register ("r")
   int result;
 
-  __asm__ ("{cntlz|cntlzw} %0,%1" 
+  __asm__ ("{cntlz|cntlzw} %0,%1"
            : "=r" (result)              // Output spec
            : "r" (n));                  // Input spec
 
   return 31 - result;
 }
 
-#elif PLATFORM(ARM) && COMPILER(GCC)
+#elif CPU(ARM) && COMPILER(GCC)
 
 // ARM, like PPC and X86, has a count leading zeroes instruction.
 static inline int LgFloor(size_t n) {
@@ -1401,15 +1401,15 @@ TCMalloc_ThreadCache *mainThreadCache;
 pthread_t mainThreadID;
 static SpinLock multiThreadedLock = SPINLOCK_INITIALIZER;
 
-void fastMallocRegisterThread(pthread_t thread) 
+void fastMallocRegisterThread(pthread_t thread)
 {
     if (thread != mainThreadID) {
         // We lock when writing isMultiThreaded but not when reading it.
         // It's ok if the main thread gets it wrong - for the main thread, the
         // global variable cache is the same as the thread-specific cache.
-        // And other threads can't get it wrong because they must have gone through 
+        // And other threads can't get it wrong because they must have gone through
         // this function before allocating so they've synchronized.
-        // Also, mainThreadCache is only set when isMultiThreaded is false, 
+        // Also, mainThreadCache is only set when isMultiThreaded is false,
         // to save a branch in some cases.
         SpinLockHolder lock(&multiThreadedLock);
         isMultiThreaded = true;
@@ -1482,7 +1482,7 @@ void TCMalloc_ThreadCache::InitTSD() {
   ASSERT(!tsd_inited);
   pthread_key_create(&heap_key, DeleteCache);
   tsd_inited = true;
-    
+
   // We may have used a fake pthread_t for the main thread.  Fix it.
   pthread_t zero;
   memset(&zero, 0, sizeof(zero));
@@ -1527,7 +1527,7 @@ void* TCMalloc_ThreadCache::CreateCacheIfNecessary() {
       if (thread_heaps != NULL) thread_heaps->prev_ = heap;
       thread_heaps = heap;
       thread_heap_count++;
-      RecomputeThreadCacheSize(); 
+      RecomputeThreadCacheSize();
       if (!isMultiThreaded) {
           mainThreadCache = heap;
           mainThreadID = pthread_self();
@@ -1862,7 +1862,7 @@ static Span* DoSampledAllocation(size_t size) {
 static ALWAYS_INLINE void* do_malloc(size_t size) {
 
 #ifndef WTF_CHANGES
-  if (TCMallocDebug::level >= TCMallocDebug::kVerbose) 
+  if (TCMallocDebug::level >= TCMallocDebug::kVerbose)
     MESSAGE("In tcmalloc do_malloc(%" PRIuS")\n", size);
 #endif
 
@@ -1896,7 +1896,7 @@ static ALWAYS_INLINE void* do_malloc(size_t size) {
 
 static ALWAYS_INLINE void do_free(void* ptr) {
 #ifndef WTF_CHANGES
-  if (TCMallocDebug::level >= TCMallocDebug::kVerbose) 
+  if (TCMallocDebug::level >= TCMallocDebug::kVerbose)
     MESSAGE("In tcmalloc do_free(%p)\n", ptr);
 #endif
 #if WTF_CHANGES
@@ -2078,7 +2078,7 @@ static TCMallocGuard module_enter_exit_hook;
 //         the call to the (de)allocation function.
 
 #ifndef WTF_CHANGES
-extern "C" 
+extern "C"
 #endif
 void* malloc(size_t size) {
   void* result = do_malloc(size);
@@ -2089,7 +2089,7 @@ void* malloc(size_t size) {
 }
 
 #ifndef WTF_CHANGES
-extern "C" 
+extern "C"
 #endif
 void free(void* ptr) {
 #ifndef WTF_CHANGES
@@ -2099,7 +2099,7 @@ void free(void* ptr) {
 }
 
 #ifndef WTF_CHANGES
-extern "C" 
+extern "C"
 #endif
 void* calloc(size_t n, size_t elem_size) {
   void* result = do_malloc(n * elem_size);
@@ -2113,7 +2113,7 @@ void* calloc(size_t n, size_t elem_size) {
 }
 
 #ifndef WTF_CHANGES
-extern "C" 
+extern "C"
 #endif
 void cfree(void* ptr) {
 #ifndef WTF_CHANGES
@@ -2123,7 +2123,7 @@ void cfree(void* ptr) {
 }
 
 #ifndef WTF_CHANGES
-extern "C" 
+extern "C"
 #endif
 void* realloc(void* old_ptr, size_t new_size) {
   if (old_ptr == NULL) {

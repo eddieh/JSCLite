@@ -306,7 +306,7 @@ void Collector::markCurrentThreadConservatively()
 #if PLATFORM(DARWIN)
     pthread_t thread = pthread_self();
     void *stackBase = pthread_get_stackaddr_np(thread);
-#elif PLATFORM(WIN_OS) && PLATFORM(X86) && COMPILER(MSVC)
+#elif PLATFORM(WIN_OS) && CPU(X86) && COMPILER(MSVC)
     NT_TIB *pTib;
     __asm {
         MOV EAX, FS:[18h]
@@ -352,23 +352,23 @@ void Collector::markOtherThreadConservatively(Thread *thread)
 {
   thread_suspend(thread->machThread);
 
-#if PLATFORM(X86)
+#if CPU(X86)
   i386_thread_state_t regs;
   unsigned user_count = sizeof(regs)/sizeof(int);
   thread_state_flavor_t flavor = i386_THREAD_STATE;
-#elif PLATFORM(X86_64)
+#elif CPU(X86_64)
   x86_thread_state64_t  regs;
   unsigned user_count = x86_THREAD_STATE64_COUNT;
   thread_state_flavor_t flavor = x86_THREAD_STATE64;
-#elif PLATFORM(PPC)
+#elif CPU(PPC)
   ppc_thread_state_t  regs;
   unsigned user_count = PPC_THREAD_STATE_COUNT;
   thread_state_flavor_t flavor = PPC_THREAD_STATE;
-#elif PLATFORM(PPC64)
+#elif CPU(PPC64)
   ppc_thread_state64_t  regs;
   unsigned user_count = PPC_THREAD_STATE64_COUNT;
   thread_state_flavor_t flavor = PPC_THREAD_STATE64;
-#elif defined(__arm__)
+#elif CPU(ARM)
    arm_thread_state_t regs;
    unsigned user_count = ARM_THREAD_STATE_COUNT;
    thread_state_flavor_t flavor = ARM_THREAD_STATE;
@@ -382,19 +382,19 @@ void Collector::markOtherThreadConservatively(Thread *thread)
   markStackObjectsConservatively((void *)&regs, (void *)((char *)&regs + (user_count * sizeof(usword_t))));
 
   // scan the stack
-#if PLATFORM(X86) && __DARWIN_UNIX03
+#if CPU(X86) && __DARWIN_UNIX03
   markStackObjectsConservatively((void *)regs.__esp, pthread_get_stackaddr_np(thread->posixThread));
-#elif PLATFORM(X86)
+#elif CPU(X86)
   markStackObjectsConservatively((void *)regs.esp, pthread_get_stackaddr_np(thread->posixThread));
-#elif PLATFORM(X86_64) && __DARWIN_UNIX03
+#elif CPU(X86_64) && __DARWIN_UNIX03
   markStackObjectsConservatively((void *)regs.__rsp, pthread_get_stackaddr_np(thread->posixThread));
-#elif PLATFORM(X86_64)
+#elif CPU(X86_64)
   markStackObjectsConservatively((void *)regs.rsp, pthread_get_stackaddr_np(thread->posixThread));
-#elif (PLATFORM(PPC) || PLATFORM(PPC64)) && __DARWIN_UNIX03
+#elif (CPU(PPC) || CPU(PPC64)) && __DARWIN_UNIX03
   markStackObjectsConservatively((void *)regs.__r1, pthread_get_stackaddr_np(thread->posixThread));
-#elif PLATFORM(PPC) || PLATFORM(PPC64)
+#elif CPU(PPC) || CPU(PPC64)
   markStackObjectsConservatively((void *)regs.r1, pthread_get_stackaddr_np(thread->posixThread));
-#elif defined(__arm__)
+#elif CPU(ARM)
   markStackObjectsConservatively((void *)regs.__sp, pthread_get_stackaddr_np(thread->posixThread));
 #else
 #error Unknown Architecture

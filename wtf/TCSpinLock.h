@@ -1,10 +1,10 @@
 // Copyright (c) 2005, Google Inc.
 // All rights reserved.
-// 
+//
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
 // met:
-// 
+//
 //     * Redistributions of source code must retain the above copyright
 // notice, this list of conditions and the following disclaimer.
 //     * Redistributions in binary form must reproduce the above
@@ -14,7 +14,7 @@
 //     * Neither the name of Google Inc. nor the names of its
 // contributors may be used to endorse or promote products derived from
 // this software without specific prior written permission.
-// 
+//
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 // "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
 // LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
@@ -45,7 +45,7 @@
 #endif
 #include <stdlib.h>     /* for abort() */
 
-#if (PLATFORM(X86) || PLATFORM(PPC)) && COMPILER(GCC)
+#if (CPU(X86) || CPU(PPC)) && COMPILER(GCC)
 static void TCMalloc_SlowLock(volatile unsigned int* lockword);
 
 // The following is a struct so that it can be initialized at compile time
@@ -54,10 +54,10 @@ struct TCMalloc_SpinLock {
 
   inline void Init() { private_lockword_ = 0; }
   inline void Finalize() { }
-    
+
   inline void Lock() {
     int r;
-#if PLATFORM(X86)
+#if CPU(X86)
     __asm__ __volatile__
       ("xchgl %0, %1"
        : "=r"(r), "=m"(private_lockword_)
@@ -78,7 +78,7 @@ struct TCMalloc_SpinLock {
   }
 
   inline void Unlock() {
-#if PLATFORM(X86)
+#if CPU(X86)
     __asm__ __volatile__
       ("movl $0, %0"
        : "=m"(private_lockword_)
@@ -89,7 +89,7 @@ struct TCMalloc_SpinLock {
       ("isync\n\t"
        "eieio\n\t"
        "stw %1, %0"
-       : "=o" (private_lockword_) 
+       : "=o" (private_lockword_)
        : "r" (0)
        : "memory");
 #endif
@@ -102,7 +102,7 @@ static void TCMalloc_SlowLock(volatile unsigned int* lockword) {
   sched_yield();        // Yield immediately since fast path failed
   while (true) {
     int r;
-#if PLATFORM(X86)
+#if CPU(X86)
     __asm__ __volatile__
       ("xchgl %0, %1"
        : "=r"(r), "=m"(*lockword)

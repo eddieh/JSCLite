@@ -33,23 +33,23 @@ namespace KJS {
 
 #if PLATFORM(DARWIN)
 
-#if PLATFORM(BIG_ENDIAN)
+#if CPU(BIG_ENDIAN)
     extern const unsigned char NaN[sizeof(double)] = { 0x7f, 0xf8, 0, 0, 0, 0, 0, 0 };
     extern const unsigned char Inf[sizeof(double)] = { 0x7f, 0xf0, 0, 0, 0, 0, 0, 0 };
-#elif PLATFORM(MIDDLE_ENDIAN)
+#elif CPU(MIDDLE_ENDIAN)
     extern const unsigned char NaN[] = { 0, 0, 0xf8, 0x7f, 0, 0, 0, 0 };
     extern const unsigned char Inf[] = { 0, 0, 0xf0, 0x7f, 0, 0, 0, 0 };
 #else
     extern const unsigned char NaN[sizeof(double)] = { 0, 0, 0, 0, 0, 0, 0xf8, 0x7f };
     extern const unsigned char Inf[sizeof(double)] = { 0, 0, 0, 0, 0, 0, 0xf0, 0x7f };
-#endif // PLATFORM(MIDDLE_ENDIAN)
+#endif // CPU(MIDDLE_ENDIAN)
 
 #else // !PLATFORM(DARWIN)
 
-#if PLATFORM(BIG_ENDIAN)
+#if CPU(BIG_ENDIAN)
     const unsigned char NaN_Bytes[] = { 0x7f, 0xf8, 0, 0, 0, 0, 0, 0 };
     const unsigned char Inf_Bytes[] = { 0x7f, 0xf0, 0, 0, 0, 0, 0, 0 };
-#elif PLATFORM(MIDDLE_ENDIAN)
+#elif CPU(MIDDLE_ENDIAN)
     const unsigned char NaN_Bytes[] = { 0, 0, 0xf8, 0x7f, 0, 0, 0, 0 };
     const unsigned char Inf_Bytes[] = { 0, 0, 0xf0, 0x7f, 0, 0, 0, 0 };
 #else
@@ -58,7 +58,7 @@ namespace KJS {
 #endif
     extern const double NaN = *(const double*) NaN_Bytes;
     extern const double Inf = *(const double*) Inf_Bytes;
- 
+
 #endif // !PLATFORM(DARWIN)
 
 

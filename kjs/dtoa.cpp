@@ -172,7 +172,7 @@
 #include "config.h"
 #include "dtoa.h"
 
-#if PLATFORM(BIG_ENDIAN)
+#if CPU(BIG_ENDIAN)
 #define IEEE_MC68k
 #else
 #define IEEE_8087
