@@ -149,6 +149,12 @@ set_target_properties(js_static PROPERTIES OUTPUT_NAME js)
 # suppress "replacement function 'operator new' cannot be declared 'inline'" warnings
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-inline-new-delete")
 
+# supress logical operator parentheses warning
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-logical-op-parentheses")
+
+# supress shift operator parentheses warning
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-shift-op-parentheses")
+
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Os")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility=hidden")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility-inlines-hidden")
