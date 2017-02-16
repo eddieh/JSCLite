@@ -23,6 +23,8 @@
 #ifndef KXMLCORE_FAST_MALLOC_H
 #define KXMLCORE_FAST_MALLOC_H
 
+#include "Platform.h"
+
 #include <stdlib.h>
 #include <new>
 
@@ -40,9 +42,9 @@ using WTF::fastCalloc;
 using WTF::fastRealloc;
 using WTF::fastFree;
 
-#if PLATFORM(GCC) && PLATFORM(DARWIN)
+#if COMPILER(GCC) && PLATFORM(DARWIN)
 #define KXMLCORE_PRIVATE_INLINE __private_extern__ inline __attribute__((always_inline))
-#elif PLATFORM(GCC)
+#elif COMPILER(GCC)
 #define KXMLCORE_PRIVATE_INLINE inline __attribute__((always_inline))
 #else
 #define KXMLCORE_PRIVATE_INLINE inline

@@ -21,7 +21,7 @@
  * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #include "APICast.h"
@@ -78,7 +78,7 @@ const JSChar* JSStringGetCharactersPtr(JSStringRef string)
 size_t JSStringGetMaximumUTF8CStringSize(JSStringRef string)
 {
     UString::Rep* rep = toJS(string);
-    
+
     // Any UTF8 character > 3 bytes encodes as a UTF16 surrogate pair.
     return rep->size() * 3 + 1; // + 1 for terminating '\0'
 }
@@ -98,7 +98,7 @@ bool JSStringIsEqual(JSStringRef a, JSStringRef b)
 {
     UString::Rep* aRep = toJS(a);
     UString::Rep* bRep = toJS(b);
-    
+
     return UString(aRep) == UString(bRep);
 }
 
@@ -107,16 +107,16 @@ bool JSStringIsEqualToUTF8CString(JSStringRef a, const char* b)
     JSStringRef bBuf = JSStringCreateWithUTF8CString(b);
     bool result = JSStringIsEqual(a, bBuf);
     JSStringRelease(bBuf);
-    
+
     return result;
 }
 
-#if defined(__APPLE__)
+#if defined(__APPLE__) && USE(APPLE_CF)
 JSStringRef JSStringCreateWithCFString(CFStringRef string)
 {
     JSLock lock;
     CFIndex length = CFStringGetLength(string);
-    
+
     // Optimized path for when CFString backing store is a UTF16 buffer
     if (const UniChar* buffer = CFStringGetCharactersPtr(string)) {
         UString::Rep* rep = UString(reinterpret_cast<const UChar*>(buffer), length).rep()->ref();

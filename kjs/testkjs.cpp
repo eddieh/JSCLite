@@ -43,6 +43,9 @@
 #include <crtdbg.h>
 #endif
 
+#include "JavaScriptCore.h"
+#include "APICast.h"
+
 using namespace KJS;
 using namespace WTF;
 
@@ -55,7 +58,7 @@ public:
     void start();
     void stop();
     long getElapsedMS(); // call stop() first
-    
+
 private:
 #if PLATFORM(WIN_OS)
     DWORD m_startTime;
@@ -92,7 +95,7 @@ long StopWatch::getElapsedMS()
 #else
     timeval elapsedTime;
     timersub(&m_stopTime, &m_startTime, &elapsedTime);
-    
+
     return elapsedTime.tv_sec * 1000 + lroundf(elapsedTime.tv_usec / 1000.0);
 #endif
 }
@@ -152,7 +155,7 @@ JSValue* TestFunctionImp::callAsFunction(ExecState* exec, JSObject*, const List 
 
       free(script);
       free(fileName);
-      
+
       return jsNumber(stopWatch.getElapsedMS());
     }
     case Quit:
@@ -205,6 +208,94 @@ int main(int argc, char** argv)
     return res;
 }
 
+void handle_exception(JSContextRef ctx, JSValueRef exception)
+{
+  JSValueRef local_except = NULL;
+  JSValueRef message, line, sourceId, name;
+  JSStringRef message_js_str, name_js_str;
+  JSObjectRef except_obj;
+  char *message_str, *name_str;
+  size_t message_len, name_len;
+  double line_num;
+
+  fprintf(stderr, "* Exception:\n");
+
+  except_obj = JSValueToObject(ctx, exception, &local_except);
+  if (local_except != NULL) {
+    fprintf(stderr, "  couldn't coerce 'exception' value to object\n");
+    goto error;
+  }
+
+  message = JSObjectGetProperty(ctx, except_obj, JSStringCreateWithUTF8CString("message"), &local_except);
+  if (local_except != NULL) {
+    fprintf(stderr, "  couldn't get property 'messager' from 'exception' object\n");
+    goto error;
+  }
+
+  message_js_str = JSValueToStringCopy(ctx, message, &local_except);
+  if (local_except != NULL) {
+    fprintf(stderr, "  couldn't get string copy from 'message'\n");
+    goto error;
+  }
+
+  message_len = JSStringGetLength(message_js_str) + 1;
+  message_str = (char*)malloc(sizeof(char) * message_len);
+  JSStringGetUTF8CString(message_js_str, message_str, message_len);
+
+  line = JSObjectGetProperty(ctx, except_obj, JSStringCreateWithUTF8CString("line"), &local_except);
+  if (local_except != NULL) {
+    fprintf(stderr, "  couldn't get property 'line' from 'exception' object\n");
+    goto error;
+  }
+
+  line_num = JSValueToNumber(ctx, line, &local_except);
+  if (local_except != NULL) {
+    fprintf(stderr, "  couldn't coerce 'line' value to number\n");
+    goto error;
+  }
+
+  // TODO: handle sourceId
+  // sourceId = JSObjectGetProperty(ctx, except_obj, JSStringCreateWithUTF8CString("sourceId"), &local_except);
+  // if (local_exept != NULL)
+  //   goto error;
+
+  name = JSObjectGetProperty(ctx, except_obj, JSStringCreateWithUTF8CString("name"), &local_except);
+  if (local_except != NULL) {
+    fprintf(stderr, "  couldn't get property 'name' from 'exception' object\n");
+    goto error;
+  }
+
+  name_js_str = JSValueToStringCopy(ctx, name, &local_except);
+  if (local_except != NULL) {
+    fprintf(stderr, "  couldn't get string copy from 'name'\n");
+    goto error;
+  }
+
+  name_len = JSStringGetLength(name_js_str) + 1;
+  name_str = (char*)malloc(sizeof(char) * name_len);
+  JSStringGetUTF8CString(name_js_str, name_str, name_len);
+
+  fprintf(stderr, "  name: %s\n", name_str);
+  fprintf(stderr, "  message: %s\n", message_str);
+  fprintf(stderr, "  line: %G\n", line_num);
+
+  goto cleanup;
+
+error:
+  fprintf(stderr, "  exception while handling exception\n");
+cleanup:
+  if (message_js_str)
+    JSStringRelease(message_js_str);
+
+  if (name_js_str)
+    JSStringRelease(name_js_str);
+
+  if (message_str)
+    free(message_str);
+
+  if (name_str)
+    free(name_str);
+}
 
 bool doIt(int argc, char** argv)
 {
@@ -213,32 +304,63 @@ bool doIt(int argc, char** argv)
 
   // create interpreter
   RefPtr<Interpreter> interp = new Interpreter(global);
+  ExecState *execState = interp->globalExec();
+
   // add debug() function
-  global->put(interp->globalExec(), "debug", new TestFunctionImp(TestFunctionImp::Debug, 1));
+  global->put(execState, "debug", new TestFunctionImp(TestFunctionImp::Debug, 1));
   // add "print" for compatibility with the mozilla js shell
-  global->put(interp->globalExec(), "print", new TestFunctionImp(TestFunctionImp::Print, 1));
+  global->put(execState, "print", new TestFunctionImp(TestFunctionImp::Print, 1));
   // add "quit" for compatibility with the mozilla js shell
-  global->put(interp->globalExec(), "quit", new TestFunctionImp(TestFunctionImp::Quit, 0));
+  global->put(execState, "quit", new TestFunctionImp(TestFunctionImp::Quit, 0));
   // add "gc" for compatibility with the mozilla js shell
-  global->put(interp->globalExec(), "gc", new TestFunctionImp(TestFunctionImp::GC, 0));
-  // add "version" for compatibility with the mozilla js shell 
-  global->put(interp->globalExec(), "version", new TestFunctionImp(TestFunctionImp::Version, 1));
-  global->put(interp->globalExec(), "run", new TestFunctionImp(TestFunctionImp::Run, 1));
-  
+  global->put(execState, "gc", new TestFunctionImp(TestFunctionImp::GC, 0));
+  // add "version" for compatibility with the mozilla js shell
+  global->put(execState, "version", new TestFunctionImp(TestFunctionImp::Version, 1));
+  global->put(execState, "run", new TestFunctionImp(TestFunctionImp::Run, 1));
+
   Interpreter::setShouldPrintExceptions(true);
-  
+
   for (int i = 1; i < argc; i++) {
     const char* fileName = argv[i];
     if (strcmp(fileName, "-f") == 0) // mozilla test driver script uses "-f" prefix for files
       continue;
-    
+
     char* script = createStringWithContentsOfFile(fileName);
     if (!script) {
       success = false;
       break; // fail early so we can catch missing files
     }
-    
+
     Completion completion = interp->evaluate(fileName, 0, script);
+    ComplType completionType = completion.complType();
+
+    switch (completionType) {
+    case Normal:
+      fprintf(stderr, "Normal completion.\n");
+      break;
+    case Break:
+      fprintf(stderr, "Break completion.\n");
+      break;
+    case Continue:
+      fprintf(stderr, "Continue completion.\n");
+      break;
+    case ReturnValue:
+      fprintf(stderr, "ReturnValue completion.\n");
+      break;
+    case Throw: {
+      fprintf(stderr, "Throw completion.\n");
+      JSContextRef ctx = toRef(execState);
+      JSValueRef val = toRef(completion.value());
+      handle_exception(ctx, val);
+      break;
+    }
+    case Interrupted:
+      fprintf(stderr, "Interrupted completion.\n");
+      break;
+    default:
+      fprintf(stderr, "Bad completion type!\n");
+    }
+
     success = success && completion.complType() != Throw;
     free(script);
   }
@@ -266,7 +388,7 @@ int kjsmain(int argc, char** argv)
 
   if (success)
     fprintf(stderr, "OK.\n");
-  
+
 #ifdef KJS_DEBUG_MEM
   Interpreter::finalCheck();
 #endif
@@ -302,17 +424,17 @@ static void testIsInteger()
 static char* createStringWithContentsOfFile(const char* fileName)
 {
   char* buffer;
-  
+
   int buffer_size = 0;
   int buffer_capacity = 1024;
   buffer = (char*)malloc(buffer_capacity);
-  
+
   FILE* f = fopen(fileName, "r");
   if (!f) {
     fprintf(stderr, "Could not open file: %s\n", fileName);
     return 0;
   }
-  
+
   while (!feof(f) && !ferror(f)) {
     buffer_size += fread(buffer + buffer_size, 1, buffer_capacity - buffer_size, f);
     if (buffer_size == buffer_capacity) { // guarantees space for trailing '\0'
@@ -320,11 +442,11 @@ static char* createStringWithContentsOfFile(const char* fileName)
       buffer = (char*)realloc(buffer, buffer_capacity);
       assert(buffer);
     }
-    
+
     assert(buffer_size < buffer_capacity);
   }
   fclose(f);
   buffer[buffer_size] = '\0';
-  
+
   return buffer;
 }

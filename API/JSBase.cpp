@@ -21,7 +21,7 @@
  * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #include "JSBase.h"
@@ -50,10 +50,10 @@ JSValueRef JSEvaluateScript(JSContextRef ctx, JSStringRef script, JSObjectRef th
             *exception = toRef(completion.value());
         return 0;
     }
-    
+
     if (completion.value())
         return toRef(completion.value());
-    
+
     // happens, for example, when the only statement is an empty (';') statement
     return toRef(jsUndefined());
 }
@@ -71,7 +71,7 @@ bool JSCheckScriptSyntax(JSContextRef ctx, JSStringRef script, JSStringRef sourc
             *exception = toRef(completion.value());
         return false;
     }
-    
+
     return true;
 }
 

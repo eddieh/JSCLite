@@ -58,7 +58,7 @@ add_custom_target(
   chartables_file ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/DerivedSources/JavaScriptCore/chartables.c)
 
 set(libjs_src
-    DerivedSources/JavaScriptCore/grammar.cpp
+  DerivedSources/JavaScriptCore/grammar.cpp
   kjs/array_object.cpp
   kjs/bool_object.cpp
   kjs/collector.cpp
@@ -167,7 +167,19 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-unroll-loops")
 
 # add test executable
 if (NOT CMAKE_CROSSCOMPILING)
-  add_executable(testkjs "${PROJECT_SOURCE_DIR}/kjs/testkjs.cpp")
+  include_directories("${PROJECT_SOURCE_DIR}/API")
+  add_executable(testkjs
+    "${PROJECT_SOURCE_DIR}/API/JSBase.cpp"
+    "${PROJECT_SOURCE_DIR}/API/JSCallbackConstructor.cpp"
+    "${PROJECT_SOURCE_DIR}/API/JSCallbackFunction.cpp"
+    "${PROJECT_SOURCE_DIR}/API/JSCallbackObject.cpp"
+    "${PROJECT_SOURCE_DIR}/API/JSClassRef.cpp"
+    "${PROJECT_SOURCE_DIR}/API/JSContextRef.cpp"
+    "${PROJECT_SOURCE_DIR}/API/JSObjectRef.cpp"
+    "${PROJECT_SOURCE_DIR}/API/JSStringRef.cpp"
+    "${PROJECT_SOURCE_DIR}/API/JSValueRef.cpp"
+    "${PROJECT_SOURCE_DIR}/kjs/testkjs.cpp"
+    )
   set_target_properties(testkjs PROPERTIES COMPILE_FLAGS "-m32" LINK_FLAGS "-m32")
   target_link_libraries(testkjs js_static)
 endif()
