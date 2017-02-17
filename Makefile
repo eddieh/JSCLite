@@ -26,5 +26,8 @@ android: host
 			$(ANDROID_CMAKE_FLAGS) && \
 		cmake --build $(ANDROID_BUILD_BASE_DIR).$$arch ; done
 
+test:
+	cd tests/mozilla && SYMROOTS=../../$(BUILD_HOST_DIR) ./run-mozilla-tests
+
 clean:
 	rm -r build
