@@ -25,16 +25,11 @@
 #ifndef WTF_UnicodeLibC_h
 #define WTF_UnicodeLibC_h
 
-//#include "../UnicodeMacrosFromICU.h"
-
 #include <assert.h>
 #include <wctype.h>
 
 typedef uint16_t UChar;
 typedef int32_t UChar32;
-
-inline bool isASCIISpace(char c) { return c <= ' ' && (c == ' ' || (c <= 0xD && c >= 0x9)); }
-inline bool isASCIISpace(unsigned short c) { return c <= ' ' && (c == ' ' || (c <= 0xD && c >= 0x9)); }
 
 namespace WTF {
 namespace Unicode {
@@ -216,11 +211,6 @@ inline bool isAlphanumeric(UChar32 c)
     return !!iswalnum(c);
 }
 
-inline bool isSeparatorSpace(int32_t c)
-{
-    return !(c & 0xffff0000) && isASCIISpace(static_cast<unsigned short>(c));
-}
-
 inline bool isPrintableChar(UChar32 c)
 {
     return !!iswprint(c);
@@ -338,6 +328,11 @@ inline CharCategory category(int32_t c)
 
     // FIXME: implement for the rest ...
     return NoCategory;
+}
+
+inline bool isSeparatorSpace(int32_t c)
+{
+    return !(c & 0xffff0000) && category(c) == Separator_Space;
 }
 
 inline bool isFormatChar(int32_t c)

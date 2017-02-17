@@ -55,7 +55,7 @@ int kjsyylex()
 
 Lexer::Lexer()
   : yylineno(1),
-    size8(128), size16(128), restrKeyword(false),
+    size8(128), size16(128), restrictedKeyword(false),
     eatNextIdentifier(false), stackToken(-1), lastToken(-1), pos(0),
     code(0), length(0),
 #ifndef KJS_PURE_ECMA
@@ -99,7 +99,7 @@ void Lexer::setCode(const UString &sourceURL, int startingLineNumber, const KJS:
 {
   yylineno = 1 + startingLineNumber;
   m_sourceURL = sourceURL;
-  restrKeyword = false;
+  restrictedKeyword = false;
   delimited = false;
   eatNextIdentifier = false;
   stackToken = -1;
@@ -200,7 +200,7 @@ int Lexer::lex()
       } else if (isLineTerminator()) {
         nextLine();
         terminator = true;
-        if (restrKeyword) {
+        if (restrictedKeyword) {
           token = ';';
           setDone(Other);
         }
@@ -316,7 +316,7 @@ int Lexer::lex()
       if (isLineTerminator()) {
         nextLine();
         terminator = true;
-        if (restrKeyword) {
+        if (restrictedKeyword) {
           token = ';';
           setDone(Other);
         } else
@@ -502,7 +502,7 @@ int Lexer::lex()
   if (state != Identifier && eatNextIdentifier)
     eatNextIdentifier = false;
 
-  restrKeyword = false;
+  restrictedKeyword = false;
   delimited = false;
   kjsyylloc.first_line = yylineno; // ???
   kjsyylloc.last_line = yylineno;
@@ -538,7 +538,7 @@ int Lexer::lex()
 
     if (token == CONTINUE || token == BREAK ||
         token == RETURN || token == THROW)
-      restrKeyword = true;
+      restrictedKeyword = true;
     break;
   case String:
     kjsyylval.ustr = makeUString(buffer16, pos16);

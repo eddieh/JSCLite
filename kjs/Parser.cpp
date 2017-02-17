@@ -80,9 +80,11 @@ PassRefPtr<ProgramNode> Parser::parse(const UString& sourceURL, int startingLine
     if (sourceId)
         *sourceId = sid;
 
-    // Enable this and the #define YYDEBUG in grammar.y to debug a parse error
-    //extern int kjsyydebug;
-    //kjsyydebug=1;
+    // To debug the parser:
+    // 1) #define YYDEBUG in grammar.y
+    // 2) Add this to your main.c[pp] file
+    //     extern int kjsyydebug;
+    //     kjsyydebug = 1;
 
     int parseError = kjsyyparse();
     bool lexError = Lexer::curr()->sawError();

@@ -86,7 +86,7 @@ namespace KJS {
     unsigned int size8, size16;
     unsigned int pos8, pos16;
     bool terminator;
-    bool restrKeyword;
+    bool restrictedKeyword;
     // encountered delimiter like "'" and "}" on last run
     bool delimited;
     bool skipLF;
