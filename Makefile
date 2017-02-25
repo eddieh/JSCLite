@@ -10,7 +10,7 @@ ANDROID_BUILD_BASE_DIR = $(BUILD_BASE_DIR)/Android
 ANDROID_CMAKE_FLAGS = $(CROSS_BUILD_CMAKE_FLAGS) \
 	-DCMAKE_TOOLCHAIN_FILE="toolchains/android.cmake"
 
-# by default just build for the hose platform & architecture
+# By default just build for the host platform & architecture.
 all: host
 
 host:
@@ -18,6 +18,9 @@ host:
 	cmake -E chdir $(BUILD_HOST_DIR) cmake ../.. && \
 	cmake --build $(BUILD_HOST_DIR)
 
+# The host must be built before any cross compile builds. Cross
+# compiling relies on a binary that must run on the host to generate
+# some files.
 android: host
 	for arch in $(ANDROID_ARCHS); do \
 		cmake -E make_directory $(ANDROID_BUILD_BASE_DIR).$$arch && \
@@ -26,7 +29,10 @@ android: host
 			$(ANDROID_CMAKE_FLAGS) && \
 		cmake --build $(ANDROID_BUILD_BASE_DIR).$$arch ; done
 
-test:
+# By default just run the tests on the host.
+test: test-host
+
+test-host:
 	cd tests/mozilla && SYMROOTS=../../$(BUILD_HOST_DIR) ./run-mozilla-tests
 
 clean:
