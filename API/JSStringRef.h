@@ -27,7 +27,6 @@
 #ifndef JSStringRef_h
 #define JSStringRef_h
 
-#include "config.h"
 #include <JavaScriptCore/JSValueRef.h>
 
 #include <stdbool.h>
@@ -136,28 +135,6 @@ bool JSStringIsEqual(JSStringRef a, JSStringRef b);
 @result       true if the two strings match, otherwise false.
 */
 bool JSStringIsEqualToUTF8CString(JSStringRef a, const char* b);
-
-#if defined(__APPLE__) && USE(APPLE_CF)
-#include <CoreFoundation/CoreFoundation.h>
-// CFString convenience methods
-/*!
-@function
-@abstract         Creates a JavaScript string from a CFString.
-@discussion       This function is optimized to take advantage of cases when
- CFStringGetCharactersPtr returns a valid pointer.
-@param string     The CFString to copy into the new JSString.
-@result           A JSString containing string. Ownership follows the Create Rule.
-*/
-JSStringRef JSStringCreateWithCFString(CFStringRef string);
-/*!
-@function
-@abstract         Creates a CFString from a JavaScript string.
-@param alloc      The alloc parameter to pass to CFStringCreate.
-@param string     The JSString to copy into the new CFString.
-@result           A CFString containing string. Ownership follows the Create Rule.
-*/
-CFStringRef JSStringCopyCFString(CFAllocatorRef alloc, JSStringRef string);
-#endif // __APPLE__
 
 #ifdef __cplusplus
 }
