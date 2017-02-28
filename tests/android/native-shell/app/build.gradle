@@ -1,5 +1,8 @@
 apply plugin: 'com.android.application'
 
+def projRoot = '../../../..'
+def prepackagedLibsDir = projRoot + '/build/Android.prepackaged-libs'
+
 android {
     compileSdkVersion 23
     buildToolsVersion '23.0.2'
@@ -9,7 +12,8 @@ android {
         minSdkVersion  9
         targetSdkVersion 23
         ndk {
-            abiFilters 'x86', 'x86_64', 'armeabi', 'armeabi-v7a', 'arm64-v8a'
+            //abiFilters 'x86', 'x86_64', 'armeabi', 'armeabi-v7a', 'arm64-v8a'
+            abiFilters 'armeabi'
         }
         externalNativeBuild {
             cmake {
@@ -30,4 +34,25 @@ android {
             path 'src/main/cpp/CMakeLists.txt'
         }
     }
+    sourceSets {
+        main {
+            jniLibs.srcDirs = [prepackagedLibsDir]
+        }
+    }
+}
+
+// prepackaging the native libraries is just a normal build of JSCLite
+task prepackageLibs << {
+    if (!file(prepackagedLibsDir + '/armeabi/libjs.so').exists()) {
+        exec {
+            workingDir(projRoot)
+            executable 'make'
+            args = ['android']
+        }
+    }
+}
+
+// ensure we build JSCLite before building
+gradle.projectsEvaluated {
+    preBuild.dependsOn(prepackageLibs)
 }

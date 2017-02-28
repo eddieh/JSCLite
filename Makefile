@@ -1,9 +1,13 @@
+# this seems to be the only reliable way to get the directory this
+# Makefile is in when building as a dependency through Gradle
+PROJ_ROOT=$(strip $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST)))))
+
 BUILD_BASE_DIR = build
 BUILD_HOST_NAME := $(shell uname -s)
 BUILD_HOST_ARCH := $(shell uname -m)
 BUILD_HOST_DIR = $(BUILD_BASE_DIR)/$(BUILD_HOST_NAME).$(BUILD_HOST_ARCH)
 
-CROSS_BUILD_CMAKE_FLAGS = -DIMPORT_PATH=${PWD}/$(BUILD_HOST_DIR)
+CROSS_BUILD_CMAKE_FLAGS = -DIMPORT_PATH=$(PROJ_ROOT)/$(BUILD_HOST_DIR)
 
 ANDROID_ARCHS = armeabi armeabi-v7a
 ANDROID_BUILD_BASE_DIR = $(BUILD_BASE_DIR)/Android
@@ -28,6 +32,7 @@ android: host
 			-DANDROID_ARCH_ABI=$$arch \
 			$(ANDROID_CMAKE_FLAGS) && \
 		cmake --build $(ANDROID_BUILD_BASE_DIR).$$arch ; done
+	sh scripts/android-prepackage-libs.sh
 
 # By default just run the tests on the host.
 test: test-host
