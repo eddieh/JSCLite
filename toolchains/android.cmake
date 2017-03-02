@@ -1,8 +1,11 @@
 set(CMAKE_SYSTEM_NAME Android)
-set(CMAKE_SYSTEM_VERSION 21)
+set(CMAKE_SYSTEM_VERSION 9)
 set(CMAKE_ANDROID_ARCH_ABI ${ANDROID_ARCH_ABI})
 set(CMAKE_ANDROID_NDK $ENV{ANDROID_NDK})
-set(CMAKE_ANDROID_STL_TYPE gnustl_shared)
+
+# I'd rather have this be shared, but the shared version isn't being
+# found when the dynamic loader searches for it.
+set(CMAKE_ANDROID_STL_TYPE gnustl_static)
 
 # Forcing gcc 4.8 creates a smaller binary
 set(CMAKE_ANDROID_NDK_TOOLCHAIN_VERSION 4.8)

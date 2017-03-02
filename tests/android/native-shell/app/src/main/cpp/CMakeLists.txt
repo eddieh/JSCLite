@@ -16,20 +16,30 @@
 
 cmake_minimum_required(VERSION 3.4.1)
 
+set(PROJ_ROOT "${CMAKE_SOURCE_DIR}/../../../../../../..")
+
 # build native_app_glue as a static lib
 add_library(app-glue STATIC
-            ${ANDROID_NDK}/sources/android/native_app_glue/android_native_app_glue.c)
+  ${ANDROID_NDK}/sources/android/native_app_glue/android_native_app_glue.c)
 
 # now build app's shared lib
 add_library(native-shell SHARED
             main.c)
 
 target_include_directories(native-shell PRIVATE
-                           ${ANDROID_NDK}/sources/android/native_app_glue)
+  ${ANDROID_NDK}/sources/android/native_app_glue)
+
+target_include_directories(native-shell PRIVATE
+  "${PROJ_ROOT}/build/include")
+
+add_library(js SHARED IMPORTED)
+set_property(TARGET js PROPERTY IMPORTED_LOCATION
+  ${PROJ_ROOT}/build/Android.prepackaged-libs/${ANDROID_ABI}/libjs.so)
 
 # add lib dependencies
 target_link_libraries(native-shell
                       android
                       app-glue
                       log
-                      m)
+                      m
+                      js)

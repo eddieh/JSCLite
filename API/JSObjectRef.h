@@ -21,7 +21,7 @@
  * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #ifndef JSObjectRef_h
@@ -44,14 +44,14 @@ extern "C" {
 @constant kJSPropertyAttributeDontEnum     Specifies that a property should not be enumerated by JSPropertyEnumerators and JavaScript for...in loops.
 @constant kJSPropertyAttributeDontDelete   Specifies that the delete operation should fail on a property.
 */
-enum { 
+enum {
     kJSPropertyAttributeNone         = 0,
     kJSPropertyAttributeReadOnly     = 1 << 1,
     kJSPropertyAttributeDontEnum     = 1 << 2,
     kJSPropertyAttributeDontDelete   = 1 << 3
 };
 
-/*! 
+/*!
 @typedef JSPropertyAttributes
 @abstract A set of JSPropertyAttributes. Combine multiple attributes by logically ORing them together.
 */
@@ -62,18 +62,18 @@ typedef unsigned JSPropertyAttributes;
 @constant kJSClassAttributeNone Specifies that a class has no special attributes.
 @constant kJSClassAttributeNoPrototype Specifies that a class should not generate a prototype object. Use kJSClassAttributeNoPrototype in combination with JSObjectMakeWithPrototype to manage prototypes manually.
 */
-enum { 
+enum {
     kJSClassAttributeNone = 0,
     kJSClassAttributeNoPrototype = 1 << 1
 };
 
-/*! 
+/*!
 @typedef JSClassAttributes
 @abstract A set of JSClassAttributes. Combine multiple attributes by logically ORing them together.
 */
 typedef unsigned JSClassAttributes;
 
-/*! 
+/*!
 @typedef JSObjectInitializeCallback
 @abstract The callback invoked when an object is first created.
 @param ctx The execution context to use.
@@ -88,7 +88,7 @@ derived class (the parent class) first, and the most derived class last.
 typedef void
 (*JSObjectInitializeCallback) (JSContextRef ctx, JSObjectRef object);
 
-/*! 
+/*!
 @typedef JSObjectFinalizeCallback
 @abstract The callback invoked when an object is finalized (prepared for garbage collection).
 @param object The JSObject being finalized.
@@ -96,13 +96,13 @@ typedef void
 
 void Finalize(JSObjectRef object);
 
-The finalize callback is called on the most derived class first, and the least 
+The finalize callback is called on the most derived class first, and the least
 derived class (the parent class) last.
 */
-typedef void            
+typedef void
 (*JSObjectFinalizeCallback) (JSObjectRef object);
 
-/*! 
+/*!
 @typedef JSObjectHasPropertyCallback
 @abstract The callback invoked when determining whether an object has a property.
 @param ctx The execution context to use.
@@ -122,7 +122,7 @@ If this callback is NULL, the getProperty callback will be used to service hasPr
 typedef bool
 (*JSObjectHasPropertyCallback) (JSContextRef ctx, JSObjectRef object, JSStringRef propertyName);
 
-/*! 
+/*!
 @typedef JSObjectGetPropertyCallback
 @abstract The callback invoked when getting a property's value.
 @param ctx The execution context to use.
@@ -139,7 +139,7 @@ If this function returns NULL, the get request forwards to object's statically d
 typedef JSValueRef
 (*JSObjectGetPropertyCallback) (JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef* exception);
 
-/*! 
+/*!
 @typedef JSObjectSetPropertyCallback
 @abstract The callback invoked when setting a property's value.
 @param ctx The execution context to use.
@@ -157,7 +157,7 @@ If this function returns false, the set request forwards to object's statically 
 typedef bool
 (*JSObjectSetPropertyCallback) (JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef value, JSValueRef* exception);
 
-/*! 
+/*!
 @typedef JSObjectDeletePropertyCallback
 @abstract The callback invoked when deleting a property.
 @param ctx The execution context to use.
@@ -174,7 +174,7 @@ If this function returns false, the delete request forwards to object's statical
 typedef bool
 (*JSObjectDeletePropertyCallback) (JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef* exception);
 
-/*! 
+/*!
 @typedef JSObjectGetPropertyNamesCallback
 @abstract The callback invoked when collecting the names of an object's properties.
 @param ctx The execution context to use.
@@ -184,14 +184,14 @@ typedef bool
 
 void GetPropertyNames(JSContextRef ctx, JSObjectRef object, JSPropertyNameAccumulatorRef accumulator);
 
-Property name accumulators are used by JSObjectCopyPropertyNames and JavaScript for...in loops. 
+Property name accumulators are used by JSObjectCopyPropertyNames and JavaScript for...in loops.
 
 Use JSPropertyNameAccumulatorAddName to add property names to accumulator. A class's getPropertyNames callback only needs to provide the names of properties that the class vends through a custom getProperty or setProperty callback. Other properties, including statically declared properties, properties vended by other classes, and properties belonging to object's prototype, are added independently.
 */
 typedef void
 (*JSObjectGetPropertyNamesCallback) (JSContextRef ctx, JSObjectRef object, JSPropertyNameAccumulatorRef propertyNames);
 
-/*! 
+/*!
 @typedef JSObjectCallAsFunctionCallback
 @abstract The callback invoked when an object is called as a function.
 @param ctx The execution context to use.
@@ -209,10 +209,10 @@ If your callback were invoked by the JavaScript expression 'myObject.myFunction(
 
 If this callback is NULL, calling your object as a function will throw an exception.
 */
-typedef JSValueRef 
+typedef JSValueRef
 (*JSObjectCallAsFunctionCallback) (JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* exception);
 
-/*! 
+/*!
 @typedef JSObjectCallAsConstructorCallback
 @abstract The callback invoked when an object is used as a constructor in a 'new' expression.
 @param ctx The execution context to use.
@@ -229,10 +229,10 @@ If your callback were invoked by the JavaScript expression 'new myConstructor()'
 
 If this callback is NULL, using your object as a constructor in a 'new' expression will throw an exception.
 */
-typedef JSObjectRef 
+typedef JSObjectRef
 (*JSObjectCallAsConstructorCallback) (JSContextRef ctx, JSObjectRef constructor, size_t argumentCount, const JSValueRef arguments[], JSValueRef* exception);
 
-/*! 
+/*!
 @typedef JSObjectHasInstanceCallback
 @abstract hasInstance The callback invoked when an object is used as the target of an 'instanceof' expression.
 @param ctx The execution context to use.
@@ -250,10 +250,10 @@ If this callback is NULL, 'instanceof' expressions that target your object will 
 
 Standard JavaScript practice calls for objects that implement the callAsConstructor callback to implement the hasInstance callback as well.
 */
-typedef bool 
+typedef bool
 (*JSObjectHasInstanceCallback)  (JSContextRef ctx, JSObjectRef constructor, JSValueRef possibleInstance, JSValueRef* exception);
 
-/*! 
+/*!
 @typedef JSObjectConvertToTypeCallback
 @abstract The callback invoked when converting an object to a particular JavaScript type.
 @param ctx The execution context to use.
@@ -272,7 +272,7 @@ This function is only invoked when converting an object to number or string. An 
 typedef JSValueRef
 (*JSObjectConvertToTypeCallback) (JSContextRef ctx, JSObjectRef object, JSType type, JSValueRef* exception);
 
-/*! 
+/*!
 @struct JSStaticValue
 @abstract This structure describes a statically declared value property.
 @field name A null-terminated UTF8 string containing the property's name.
@@ -287,7 +287,7 @@ typedef struct {
     JSPropertyAttributes attributes;
 } JSStaticValue;
 
-/*! 
+/*!
 @struct JSStaticFunction
 @abstract This structure describes a statically declared function property.
 @field name A null-terminated UTF8 string containing the property's name.
@@ -311,7 +311,7 @@ typedef struct {
 @field staticFunctions A JSStaticFunction array containing the class's statically declared function properties. Pass NULL to specify no statically declared function properties. The array must be terminated by a JSStaticFunction whose name field is NULL.
 @field initialize The callback invoked when an object is first created. Use this callback to initialize the object.
 @field finalize The callback invoked when an object is finalized (prepared for garbage collection). Use this callback to release resources allocated for the object, and perform other cleanup.
-@field hasProperty The callback invoked when determining whether an object has a property. If this field is NULL, getProperty is called instead. The hasProperty callback enables optimization in cases where only a property's existence needs to be known, not its value, and computing its value is expensive. 
+@field hasProperty The callback invoked when determining whether an object has a property. If this field is NULL, getProperty is called instead. The hasProperty callback enables optimization in cases where only a property's existence needs to be known, not its value, and computing its value is expensive.
 @field getProperty The callback invoked when getting a property's value.
 @field setProperty The callback invoked when setting a property's value.
 @field deleteProperty The callback invoked when deleting a property.
@@ -339,10 +339,10 @@ typedef struct {
 
     const char*                         className;
     JSClassRef                          parentClass;
-        
+
     JSStaticValue*                      staticValues;
     JSStaticFunction*                   staticFunctions;
-    
+
     JSObjectInitializeCallback          initialize;
     JSObjectFinalizeCallback            finalize;
     JSObjectHasPropertyCallback         hasProperty;
@@ -356,8 +356,8 @@ typedef struct {
     JSObjectConvertToTypeCallback       convertToType;
 } JSClassDefinition;
 
-/*! 
-@const kJSClassDefinitionEmpty 
+/*!
+@const kJSClassDefinitionEmpty
 @abstract A JSClassDefinition structure of the current version, filled with NULL pointers and having no attributes.
 @discussion Use this constant as a convenience when creating class definitions. For example, to create a class definition with only a finalize method:
 
@@ -365,7 +365,7 @@ JSClassDefinition definition = kJSClassDefinitionEmpty;
 
 definition.finalize = Finalize;
 */
-extern const JSClassDefinition kJSClassDefinitionEmpty;
+JS_EXPORT extern const JSClassDefinition kJSClassDefinitionEmpty;
 
 /*!
 @function
@@ -373,7 +373,7 @@ extern const JSClassDefinition kJSClassDefinitionEmpty;
 @param definition A JSClassDefinition that defines the class.
 @result A JSClass with the given definition. Ownership follows the Create Rule.
 */
-JSClassRef JSClassCreate(JSClassDefinition* definition);
+JS_EXPORT JSClassRef JSClassCreate(JSClassDefinition* definition);
 
 /*!
 @function
@@ -381,14 +381,14 @@ JSClassRef JSClassCreate(JSClassDefinition* definition);
 @param jsClass The JSClass to retain.
 @result A JSClass that is the same as jsClass.
 */
-JSClassRef JSClassRetain(JSClassRef jsClass);
+JS_EXPORT JSClassRef JSClassRetain(JSClassRef jsClass);
 
 /*!
 @function
 @abstract Releases a JavaScript class.
 @param jsClass The JSClass to release.
 */
-void JSClassRelease(JSClassRef jsClass);
+JS_EXPORT void JSClassRelease(JSClassRef jsClass);
 
 /*!
 @function
@@ -403,7 +403,7 @@ data is set on the created object before the intialize methods in its class chai
 
 The default object class does not allocate storage for private data, so you must provide a non-NULL jsClass if you want your object to be able to store private data.
 */
-JSObjectRef JSObjectMake(JSContextRef ctx, JSClassRef jsClass, void* data);
+JS_EXPORT JSObjectRef JSObjectMake(JSContextRef ctx, JSClassRef jsClass, void* data);
 
 /*!
 @function
@@ -414,12 +414,12 @@ JSObjectRef JSObjectMake(JSContextRef ctx, JSClassRef jsClass, void* data);
 @param data A void* to set as the object's private data. Pass NULL to specify no private data.
 @result A JSObject with the given class, private data, and prototype.
 @discussion Use JSObjectMakeWithPrototype in combination with kJSClassAttributeNoPrototype to manage prototypes manually.
- 
+
 data is set on the created object before the intialize methods in its class chain are called. This enables the initialize methods to retrieve and manipulate data through JSObjectGetPrivate.
 
 The default object class does not allocate storage for private data, so you must provide a non-NULL JSClass if you want your object to be able to store private data.
 */
-JSObjectRef JSObjectMakeWithPrototype(JSContextRef ctx, JSClassRef jsClass, void* data, JSValueRef prototype);
+JS_EXPORT JSObjectRef JSObjectMakeWithPrototype(JSContextRef ctx, JSClassRef jsClass, void* data, JSValueRef prototype);
 
 /*!
 @function
@@ -429,7 +429,7 @@ JSObjectRef JSObjectMakeWithPrototype(JSContextRef ctx, JSClassRef jsClass, void
 @param callAsFunction The JSObjectCallAsFunctionCallback to invoke when the function is called.
 @result A JSObject that is a function. The object's prototype will be the default function prototype.
 */
-JSObjectRef JSObjectMakeFunctionWithCallback(JSContextRef ctx, JSStringRef name, JSObjectCallAsFunctionCallback callAsFunction);
+JS_EXPORT JSObjectRef JSObjectMakeFunctionWithCallback(JSContextRef ctx, JSStringRef name, JSObjectCallAsFunctionCallback callAsFunction);
 
 /*!
 @function
@@ -440,7 +440,7 @@ JSObjectRef JSObjectMakeFunctionWithCallback(JSContextRef ctx, JSStringRef name,
 @result A JSObject that is a constructor. The object's prototype will be the default object prototype.
 @discussion The default object constructor takes no arguments and constructs an object of class jsClass with no private data.
 */
-JSObjectRef JSObjectMakeConstructor(JSContextRef ctx, JSClassRef jsClass, JSObjectCallAsConstructorCallback callAsConstructor);
+JS_EXPORT JSObjectRef JSObjectMakeConstructor(JSContextRef ctx, JSClassRef jsClass, JSObjectCallAsConstructorCallback callAsConstructor);
 
 /*!
 @function
@@ -456,7 +456,7 @@ JSObjectRef JSObjectMakeConstructor(JSContextRef ctx, JSClassRef jsClass, JSObje
 @result A JSObject that is a function, or NULL if either body or parameterNames contains a syntax error. The object's prototype will be the default function prototype.
 @discussion Use this method when you want to execute a script repeatedly, to avoid the cost of re-parsing the script before each execution.
 */
-JSObjectRef JSObjectMakeFunction(JSContextRef ctx, JSStringRef name, unsigned parameterCount, const JSStringRef parameterNames[], JSStringRef body, JSStringRef sourceURL, int startingLineNumber, JSValueRef* exception);
+JS_EXPORT JSObjectRef JSObjectMakeFunction(JSContextRef ctx, JSStringRef name, unsigned parameterCount, const JSStringRef parameterNames[], JSStringRef body, JSStringRef sourceURL, int startingLineNumber, JSValueRef* exception);
 
 /*!
 @function
@@ -465,7 +465,7 @@ JSObjectRef JSObjectMakeFunction(JSContextRef ctx, JSStringRef name, unsigned pa
 @param object A JSObject whose prototype you want to get.
 @result A JSValue that is the object's prototype.
 */
-JSValueRef JSObjectGetPrototype(JSContextRef ctx, JSObjectRef object);
+JS_EXPORT JSValueRef JSObjectGetPrototype(JSContextRef ctx, JSObjectRef object);
 
 /*!
 @function
@@ -474,7 +474,7 @@ JSValueRef JSObjectGetPrototype(JSContextRef ctx, JSObjectRef object);
 @param object The JSObject whose prototype you want to set.
 @param value A JSValue to set as the object's prototype.
 */
-void JSObjectSetPrototype(JSContextRef ctx, JSObjectRef object, JSValueRef value);
+JS_EXPORT void JSObjectSetPrototype(JSContextRef ctx, JSObjectRef object, JSValueRef value);
 
 /*!
 @function
@@ -483,7 +483,7 @@ void JSObjectSetPrototype(JSContextRef ctx, JSObjectRef object, JSValueRef value
 @param propertyName A JSString containing the property's name.
 @result true if the object has a property whose name matches propertyName, otherwise false.
 */
-bool JSObjectHasProperty(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName);
+JS_EXPORT bool JSObjectHasProperty(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName);
 
 /*!
 @function
@@ -494,7 +494,7 @@ bool JSObjectHasProperty(JSContextRef ctx, JSObjectRef object, JSStringRef prope
 @param exception A pointer to a JSValueRef in which to store an exception, if any. Pass NULL if you do not care to store an exception.
 @result The property's value if object has the property, otherwise the undefined value.
 */
-JSValueRef JSObjectGetProperty(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef* exception);
+JS_EXPORT JSValueRef JSObjectGetProperty(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef* exception);
 
 /*!
 @function
@@ -506,7 +506,7 @@ JSValueRef JSObjectGetProperty(JSContextRef ctx, JSObjectRef object, JSStringRef
 @param exception A pointer to a JSValueRef in which to store an exception, if any. Pass NULL if you do not care to store an exception.
 @param attributes A logically ORed set of JSPropertyAttributes to give to the property.
 */
-void JSObjectSetProperty(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef value, JSPropertyAttributes attributes, JSValueRef* exception);
+JS_EXPORT void JSObjectSetProperty(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef value, JSPropertyAttributes attributes, JSValueRef* exception);
 
 /*!
 @function
@@ -517,7 +517,7 @@ void JSObjectSetProperty(JSContextRef ctx, JSObjectRef object, JSStringRef prope
 @param exception A pointer to a JSValueRef in which to store an exception, if any. Pass NULL if you do not care to store an exception.
 @result true if the delete operation succeeds, otherwise false (for example, if the property has the kJSPropertyAttributeDontDelete attribute set).
 */
-bool JSObjectDeleteProperty(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef* exception);
+JS_EXPORT bool JSObjectDeleteProperty(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef* exception);
 
 /*!
 @function
@@ -529,7 +529,7 @@ bool JSObjectDeleteProperty(JSContextRef ctx, JSObjectRef object, JSStringRef pr
 @result The property's value if object has the property, otherwise the undefined value.
 @discussion Calling JSObjectGetPropertyAtIndex is equivalent to calling JSObjectGetProperty with a string containing propertyIndex, but JSObjectGetPropertyAtIndex provides optimized access to numeric properties.
 */
-JSValueRef JSObjectGetPropertyAtIndex(JSContextRef ctx, JSObjectRef object, unsigned propertyIndex, JSValueRef* exception);
+JS_EXPORT JSValueRef JSObjectGetPropertyAtIndex(JSContextRef ctx, JSObjectRef object, unsigned propertyIndex, JSValueRef* exception);
 
 /*!
 @function
@@ -541,7 +541,7 @@ JSValueRef JSObjectGetPropertyAtIndex(JSContextRef ctx, JSObjectRef object, unsi
 @param exception A pointer to a JSValueRef in which to store an exception, if any. Pass NULL if you do not care to store an exception.
 @discussion Calling JSObjectSetPropertyAtIndex is equivalent to calling JSObjectSetProperty with a string containing propertyIndex, but JSObjectSetPropertyAtIndex provides optimized access to numeric properties.
 */
-void JSObjectSetPropertyAtIndex(JSContextRef ctx, JSObjectRef object, unsigned propertyIndex, JSValueRef value, JSValueRef* exception);
+JS_EXPORT void JSObjectSetPropertyAtIndex(JSContextRef ctx, JSObjectRef object, unsigned propertyIndex, JSValueRef value, JSValueRef* exception);
 
 /*!
 @function
@@ -549,7 +549,7 @@ void JSObjectSetPropertyAtIndex(JSContextRef ctx, JSObjectRef object, unsigned p
 @param object A JSObject whose private data you want to get.
 @result A void* that is the object's private data, if the object has private data, otherwise NULL.
 */
-void* JSObjectGetPrivate(JSObjectRef object);
+JS_EXPORT void* JSObjectGetPrivate(JSObjectRef object);
 
 /*!
 @function
@@ -559,7 +559,7 @@ void* JSObjectGetPrivate(JSObjectRef object);
 @result true if object can store private data, otherwise false.
 @discussion The default object class does not allocate storage for private data. Only objects created with a non-NULL JSClass can store private data.
 */
-bool JSObjectSetPrivate(JSObjectRef object, void* data);
+JS_EXPORT bool JSObjectSetPrivate(JSObjectRef object, void* data);
 
 /*!
 @function
@@ -568,7 +568,7 @@ bool JSObjectSetPrivate(JSObjectRef object, void* data);
 @param object The JSObject to test.
 @result true if the object can be called as a function, otherwise false.
 */
-bool JSObjectIsFunction(JSContextRef ctx, JSObjectRef object);
+JS_EXPORT bool JSObjectIsFunction(JSContextRef ctx, JSObjectRef object);
 
 /*!
 @function
@@ -581,7 +581,7 @@ bool JSObjectIsFunction(JSContextRef ctx, JSObjectRef object);
 @param exception A pointer to a JSValueRef in which to store an exception, if any. Pass NULL if you do not care to store an exception.
 @result The JSValue that results from calling object as a function, or NULL if an exception is thrown or object is not a function.
 */
-JSValueRef JSObjectCallAsFunction(JSContextRef ctx, JSObjectRef object, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* exception);
+JS_EXPORT JSValueRef JSObjectCallAsFunction(JSContextRef ctx, JSObjectRef object, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* exception);
 
 /*!
 @function
@@ -590,7 +590,7 @@ JSValueRef JSObjectCallAsFunction(JSContextRef ctx, JSObjectRef object, JSObject
 @param object The JSObject to test.
 @result true if the object can be called as a constructor, otherwise false.
 */
-bool JSObjectIsConstructor(JSContextRef ctx, JSObjectRef object);
+JS_EXPORT bool JSObjectIsConstructor(JSContextRef ctx, JSObjectRef object);
 
 /*!
 @function
@@ -602,7 +602,7 @@ bool JSObjectIsConstructor(JSContextRef ctx, JSObjectRef object);
 @param exception A pointer to a JSValueRef in which to store an exception, if any. Pass NULL if you do not care to store an exception.
 @result The JSObject that results from calling object as a constructor, or NULL if an exception is thrown or object is not a constructor.
 */
-JSObjectRef JSObjectCallAsConstructor(JSContextRef ctx, JSObjectRef object, size_t argumentCount, const JSValueRef arguments[], JSValueRef* exception);
+JS_EXPORT JSObjectRef JSObjectCallAsConstructor(JSContextRef ctx, JSObjectRef object, size_t argumentCount, const JSValueRef arguments[], JSValueRef* exception);
 
 /*!
 @function
@@ -611,7 +611,7 @@ JSObjectRef JSObjectCallAsConstructor(JSContextRef ctx, JSObjectRef object, size
 @param object The object whose property names you want to get.
 @result A JSPropertyNameArray containing the names object's enumerable properties.
 */
-JSPropertyNameArrayRef JSObjectCopyPropertyNames(JSContextRef ctx, JSObjectRef object);
+JS_EXPORT JSPropertyNameArrayRef JSObjectCopyPropertyNames(JSContextRef ctx, JSObjectRef object);
 
 /*!
 @function
@@ -619,14 +619,14 @@ JSPropertyNameArrayRef JSObjectCopyPropertyNames(JSContextRef ctx, JSObjectRef o
 @param array The JSPropertyNameArray to retain.
 @result A JSPropertyNameArray that is the same as array.
 */
-JSPropertyNameArrayRef JSPropertyNameArrayRetain(JSPropertyNameArrayRef array);
+JS_EXPORT JSPropertyNameArrayRef JSPropertyNameArrayRetain(JSPropertyNameArrayRef array);
 
 /*!
 @function
 @abstract Releases a JavaScript property name array.
 @param array The JSPropetyNameArray to release.
 */
-void JSPropertyNameArrayRelease(JSPropertyNameArrayRef array);
+JS_EXPORT void JSPropertyNameArrayRelease(JSPropertyNameArrayRef array);
 
 /*!
 @function
@@ -634,7 +634,7 @@ void JSPropertyNameArrayRelease(JSPropertyNameArrayRef array);
 @param array The array from which to retrieve the count.
 @result An integer count of the number of names in array.
 */
-size_t JSPropertyNameArrayGetCount(JSPropertyNameArrayRef array);
+JS_EXPORT size_t JSPropertyNameArrayGetCount(JSPropertyNameArrayRef array);
 
 /*!
 @function
@@ -643,7 +643,7 @@ size_t JSPropertyNameArrayGetCount(JSPropertyNameArrayRef array);
 @param index The index of the property name to retrieve.
 @result A JSStringRef containing the property name.
 */
-JSStringRef JSPropertyNameArrayGetNameAtIndex(JSPropertyNameArrayRef array, size_t index);
+JS_EXPORT JSStringRef JSPropertyNameArrayGetNameAtIndex(JSPropertyNameArrayRef array, size_t index);
 
 /*!
 @function
@@ -651,7 +651,7 @@ JSStringRef JSPropertyNameArrayGetNameAtIndex(JSPropertyNameArrayRef array, size
 @param accumulator The accumulator object to which to add the property name.
 @param propertyName The property name to add.
 */
-void JSPropertyNameAccumulatorAddName(JSPropertyNameAccumulatorRef accumulator, JSStringRef propertyName);
+JS_EXPORT void JSPropertyNameAccumulatorAddName(JSPropertyNameAccumulatorRef accumulator, JSStringRef propertyName);
 
 #ifdef __cplusplus
 }

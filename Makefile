@@ -18,6 +18,7 @@ ANDROID_CMAKE_FLAGS = $(CROSS_BUILD_CMAKE_FLAGS) \
 all: host
 
 host:
+	sh scripts/prepackage-includes.sh
 	cmake -E make_directory $(BUILD_HOST_DIR) && \
 	cmake -E chdir $(BUILD_HOST_DIR) cmake ../.. && \
 	cmake --build $(BUILD_HOST_DIR)

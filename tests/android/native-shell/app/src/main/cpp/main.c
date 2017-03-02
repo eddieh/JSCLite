@@ -18,6 +18,8 @@
 #include <android_native_app_glue.h>
 #include <android/log.h>
 
+#include <JavaScriptCore/JavaScriptCore.h>
+
 #define LOG_TAG "native-shell"
 #define LOGI(...) __android_log_print(ANDROID_LOG_INFO, LOG_TAG, __VA_ARGS__)
 #define LOGW(...) __android_log_print(ANDROID_LOG_WARN, LOG_TAG, __VA_ARGS__)
@@ -28,6 +30,7 @@
 
 struct engine {
     struct android_app *app;
+    JSGlobalContextRef ctx;
     int animating;
 };
 
@@ -103,6 +106,9 @@ void android_main(struct android_app *app) {
     app->onAppCmd = engine_handle_cmd;
     app->onInputEvent = engine_handle_input;
     engine.app = app;
+
+    if (!engine.ctx)
+        engine.ctx = JSGlobalContextCreate(NULL);
 
     // loop waiting for stuff to do.
 

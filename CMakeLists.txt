@@ -25,6 +25,7 @@ include_directories(
   "${PROJECT_SOURCE_DIR}/kjs"
   "${PROJECT_SOURCE_DIR}/pcre"
   "${CMAKE_CURRENT_BINARY_DIR}/DerivedSources/JavaScriptCore"
+  "${PROJECT_SOURCE_DIR}/build/include"
   )
 
 if (CMAKE_CROSSCOMPILING)
@@ -122,6 +123,15 @@ set(libjs_src
   pcre/pcre_xclass.c
   pcre/ucp_findchar.c
 
+  API/JSBase.cpp
+  API/JSCallbackConstructor.cpp
+  API/JSCallbackFunction.cpp
+  API/JSCallbackObject.cpp
+  API/JSClassRef.cpp
+  API/JSContextRef.cpp
+  API/JSObjectRef.cpp
+  API/JSStringRef.cpp
+  API/JSValueRef.cpp
   )
 
 add_library(libjs_obj OBJECT ${libjs_src})
@@ -164,6 +174,8 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-stack-protector")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ffunction-sections")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fdata-sections")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-unroll-loops")
+
+#set(ANDROID_LINKER_FLAGS "${ANDROID_LINKER_FLAGS} --disable-rpath")
 
 # add test executable
 if (NOT CMAKE_CROSSCOMPILING)
