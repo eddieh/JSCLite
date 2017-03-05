@@ -107,8 +107,49 @@ void android_main(struct android_app *app) {
     app->onInputEvent = engine_handle_input;
     engine.app = app;
 
-    if (!engine.ctx)
+    if (!engine.ctx) {
         engine.ctx = JSGlobalContextCreate(NULL);
+
+        // Java: String shell = getIntent().getStringExtra("shell");
+        // Java: String test = getIntent().getStringExtra("test");
+
+        /* TODO: check for exceptions */
+
+        ANativeActivity *activity = app->activity;
+        JavaVM *vm = activity->vm;
+        JNIEnv *env;
+
+        (*vm)->AttachCurrentThread(vm, &env, NULL);
+
+        jclass activityClass = (*env)->FindClass(env, "android/app/Activity");
+        jclass intentClass = (*env)->FindClass(env, "android/content/Intent");
+
+        jmethodID getIntent = (*env)->GetMethodID(
+            env, activityClass, "getIntent", "()Landroid/content/Intent;");
+
+        jmethodID getStringExtra = (*env)->GetMethodID(
+            env, intentClass, "getStringExtra",
+            "(Ljava/lang/String;)Ljava/lang/String;");
+
+        jobject intentObj = (*env)->CallObjectMethod(
+            env, activity->clazz /* <- bad name for an instance */, getIntent);
+
+        jstring shell = (*env)->CallObjectMethod(
+            env, intentObj, getStringExtra, (*env)->NewStringUTF(env, "shell"));
+
+        jstring test = (*env)->CallObjectMethod(
+            env, intentObj, getStringExtra, (*env)->NewStringUTF(env, "test"));
+
+        if (shell) {
+            char *shell_cstr = (*env)->GetStringUTFChars(env, shell, NULL);
+            LOGI(">>>>>>>>>>>>>> shell_cstr = %s", shell_cstr);
+        }
+
+        if (test) {
+            char *test_cstr = (*env)->GetStringUTFChars(env, test, NULL);
+            LOGI(">>>>>>>>>>>>>> test_cstr = %s", test_cstr);
+        }
+    }
 
     // loop waiting for stuff to do.
 
