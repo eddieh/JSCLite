@@ -16,7 +16,7 @@
  * Copyright (C) 1998 Netscape Communications Corporation. All
  * Rights Reserved.
  *
- * Contributor(s): 
+ * Contributor(s):
  *
  */
 /*
@@ -232,8 +232,8 @@ var	TIME_1900	 = -2208988800000;
 
 
 /*
- * Originally, the test suite used a hard-coded value TZ_DIFF = -8. 
- * But that was only valid for testers in the Pacific Standard Time Zone! 
+ * Originally, the test suite used a hard-coded value TZ_DIFF = -8.
+ * But that was only valid for testers in the Pacific Standard Time Zone!
  * We calculate the proper number dynamically for any tester. We just
  * have to be careful not to use a date subject to Daylight Savings Time...
 */
@@ -243,14 +243,14 @@ function getTimeZoneDiff()
 }
 
 
-/* 
- * Date test "ResultArrays" are hard-coded for Pacific Standard Time. 
+/*
+ * Date test "ResultArrays" are hard-coded for Pacific Standard Time.
  * We must adjust them for the tester's own timezone -
  */
 function adjustResultArray(ResultArray, msMode)
 {
-  // If the tester's system clock is in PST, no need to continue - 
-  if (!PST_DIFF) {return;} 
+  // If the tester's system clock is in PST, no need to continue -
+  if (!PST_DIFF) {return;}
 
   /* The date testcases instantiate Date objects in two different ways:
    *
@@ -262,21 +262,21 @@ function adjustResultArray(ResultArray, msMode)
    *
    * In the first case we must correct those values expected for local measurements,
    * like dt.getHours() etc. No correction is necessary for dt.getUTCHours() etc.
-   * 
+   *
    * In the second case, it is exactly the other way around -
-  */ 
+  */
   if (msMode)
   {
     // The hard-coded UTC milliseconds from Time 0 derives from a UTC date.
     // Shift to the right by the offset between UTC and the tester.
     var t = ResultArray[TIME]  +  TZ_DIFF*msPerHour;
 
-    // Use our date arithmetic functions to determine the local hour, day, etc. 
-    ResultArray[HOURS] = HourFromTime(t); 
+    // Use our date arithmetic functions to determine the local hour, day, etc.
+    ResultArray[HOURS] = HourFromTime(t);
     ResultArray[DAY] = WeekDay(t);
     ResultArray[DATE] = DateFromTime(t);
     ResultArray[MONTH] = MonthFromTime(t);
-    ResultArray[YEAR] = YearFromTime(t);  
+    ResultArray[YEAR] = YearFromTime(t);
   }
   else
   {
@@ -284,9 +284,9 @@ function adjustResultArray(ResultArray, msMode)
     // Shift to the left by the offset between PST and the tester.
     var t = ResultArray[TIME]  -  PST_DIFF*msPerHour;
 
-    // Use our date arithmetic functions to determine the UTC hour, day, etc. 
+    // Use our date arithmetic functions to determine the UTC hour, day, etc.
     ResultArray[TIME] = t;
-    ResultArray[UTC_HOURS] = HourFromTime(t); 
+    ResultArray[UTC_HOURS] = HourFromTime(t);
     ResultArray[UTC_DAY] = WeekDay(t);
     ResultArray[UTC_DATE] = DateFromTime(t);
     ResultArray[UTC_MONTH] = MonthFromTime(t);
