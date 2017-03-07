@@ -100,7 +100,7 @@ static void engine_handle_cmd(struct android_app *app, int32_t cmd) {
     }
 }
 
-        void init_test_case(struct android_app *app) {
+void init_test_case(struct android_app *app) {
     struct engine *engine = (struct engine *)app->userData;
 
     // Java: String shell = getIntent().getStringExtra("shell");
@@ -251,7 +251,9 @@ cleanup:
         free(name_str);
 }
 
-print_native(JSContextRef ctx, JSObjectRef fn, JSObjectRef this_obj, size_t argc, const JSValueRef argv[], JSValueRef* except)
+JSValueRef print_native(
+    JSContextRef ctx, JSObjectRef fn, JSObjectRef this_obj,
+    size_t argc, const JSValueRef argv[], JSValueRef* except)
 {
     JSValueRef exception = NULL;
 
@@ -272,6 +274,14 @@ print_native(JSContextRef ctx, JSObjectRef fn, JSObjectRef this_obj, size_t argc
         free(cstr);
     }
 
+    // must return something
+    return JSValueMakeUndefined(ctx);
+}
+
+JSValueRef noop_native(
+    JSContextRef ctx, JSObjectRef fn, JSObjectRef this_obj,
+    size_t argc, const JSValueRef argv[], JSValueRef* except)
+{
     // must return something
     return JSValueMakeUndefined(ctx);
 }
@@ -335,6 +345,9 @@ void run_test_case(struct android_app *app) {
     // print, quit, gc, version
 
     addJSFunction(engine->ctx, "print", print_native);
+    addJSFunction(engine->ctx, "quit", noop_native);
+    addJSFunction(engine->ctx, "gc", noop_native);
+    addJSFunction(engine->ctx, "version", noop_native);
 
     char *shellScript = readFile(engine->shell);
     char *testScript = readFile(engine->test);
@@ -348,7 +361,7 @@ void run_test_case(struct android_app *app) {
         return;
     }
 
-    JSEvaluateScript(engine->ctx, testSrc, NULL, NULL, 0, NULL);
+    JSEvaluateScript(engine->ctx, testSrc, NULL, NULL, 0, &exception);
     if (exception) {
         handle_exception(engine->ctx, exception);
         return;
