@@ -343,7 +343,6 @@ void run_test_case(struct android_app *app) {
     engine->ctx = JSGlobalContextCreate(NULL);
 
     // print, quit, gc, version
-
     addJSFunction(engine->ctx, "print", print_native);
     addJSFunction(engine->ctx, "quit", noop_native);
     addJSFunction(engine->ctx, "gc", noop_native);
