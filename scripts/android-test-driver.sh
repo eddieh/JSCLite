@@ -49,7 +49,7 @@ for dir in ${TEST_DIRS[@]}; do
             exit 1
         fi
         echo "$TMPFILE"
-        rm -f "$TMPFILE"
+        rm "$TMPFILE"
 
         OUTPUT=$(basename "$TMPFILE")
         echo "$OUTPUT"
@@ -62,7 +62,7 @@ for dir in ${TEST_DIRS[@]}; do
         adb shell am start -a android.intent.action.MAIN \
                 -e shell "$SHELLJS" \
                 -e test "$TCJS" \
-                -e output "$OUTPUT" \
+                -e output "$REMOTE_TEST_DIR/$OUTPUT" \
                 -n com.example.native_shell/com.example.nativeshell.NativeApp
 
         # sleep and wait for test case to write a file to sdcard
@@ -73,6 +73,8 @@ for dir in ${TEST_DIRS[@]}; do
             sleep 1
             ((TIMEOUT++))
         done
+
+        adb shell rm "$REMOTE_TEST_DIR/$OUTPUT"
 
         # if we didn't get the file
         if [ ! -e "$TMPFILE" ]; then
@@ -86,6 +88,11 @@ for dir in ${TEST_DIRS[@]}; do
 
         # append output to test run file
         cat "$TMPFILE" >> "$ANDROID_TEST_ROOT/actual.txt"
+
+        # insert blank line after test output
+        echo "" >> "$ANDROID_TEST_ROOT/actual.txt"
+
+        rm "$TMPFILE"
 
     done
 done

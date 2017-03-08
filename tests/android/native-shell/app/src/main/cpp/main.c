@@ -37,7 +37,10 @@ struct engine {
     int animating;
     char *shell;
     char *test;
+    char *output;
 };
+
+static FILE *outfile;
 
 static void engine_draw_frame(struct engine *engine) {
     if (engine->app->window == NULL)
@@ -133,6 +136,9 @@ void init_test_case(struct android_app *app) {
     jstring test = (*env)->CallObjectMethod(
         env, intentObj, getStringExtra, (*env)->NewStringUTF(env, "test"));
 
+    jstring output = (*env)->CallObjectMethod(
+        env, intentObj, getStringExtra, (*env)->NewStringUTF(env, "output"));
+
     if (shell) {
         char *shell_cstr = (*env)->GetStringUTFChars(env, shell, NULL);
         size_t s = strlen(shell_cstr);
@@ -160,6 +166,19 @@ void init_test_case(struct android_app *app) {
         LOGI(">>>>>>>>>>>>>> test = %s", engine->test);
 
         (*env)->ReleaseStringUTFChars(env, test, test_cstr);
+    }
+
+    if (output) {
+        char *output_cstr = (*env)->GetStringUTFChars(env, output, NULL);
+        size_t s = strlen(output_cstr);
+
+        engine->output = malloc(s + 1);
+        memcpy(engine->output, output_cstr, s);
+        engine->output[s] = 0;
+
+        LOGI(">>>>>>>>>>>>>> output = %s", engine->output);
+
+        (*env)->ReleaseStringUTFChars(env, output, output_cstr);
     }
 }
 
@@ -268,7 +287,8 @@ JSValueRef print_native(
         cstr = (char*)malloc(sizeof(char) * cstr_len);
         JSStringGetUTF8CString(jsstr, cstr, cstr_len);
 
-        LOGI("%s", cstr);
+        //LOGI("%s", cstr);
+        fprintf(outfile, "%s\n", cstr);
 
         JSStringRelease(jsstr);
         free(cstr);
@@ -340,6 +360,14 @@ void run_test_case(struct android_app *app) {
     struct engine *engine = (struct engine *)app->userData;
     JSValueRef exception = NULL;
 
+    if (!outfile)
+        outfile = fopen(engine->output, "a");
+
+    if (!outfile) {
+        LOGE("Could not open file: %s", engine->output);
+        return;
+    }
+
     engine->ctx = JSGlobalContextCreate(NULL);
 
     // print, quit, gc, version
@@ -368,6 +396,9 @@ void run_test_case(struct android_app *app) {
 
     JSStringRelease(shellSrc);
     JSStringRelease(testSrc);
+
+    fclose(outfile);
+    outfile = NULL;
 }
 
 void android_main(struct android_app *app) {
