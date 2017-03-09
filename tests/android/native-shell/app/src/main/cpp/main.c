@@ -184,79 +184,121 @@ void init_test_case(struct android_app *app) {
 
 void handle_exception(JSContextRef ctx, JSValueRef exception) {
     JSValueRef local_except = NULL;
+    JSType except_type;
     JSValueRef message, line, sourceId, name;
-    JSStringRef message_js_str, name_js_str;
+    JSStringRef message_js_str = NULL, name_js_str = NULL;
     JSObjectRef except_obj;
-    char *message_str, *name_str;
+    char *message_str = NULL, *name_str = NULL;
     size_t message_len, name_len;
     double line_num;
 
-    LOGI("* Exception:\n");
+    JSStringRef message_prop_name = NULL,
+        line_prop_name = NULL, name_prop_name = NULL;
+
+    // 'exception' can be any value type
+    except_type = JSValueGetType(ctx, exception);
+    switch (except_type) {
+    case kJSTypeUndefined:
+        LOGE("JS Exception: undefined");
+        return;
+    case kJSTypeNull:
+        LOGE("JS Exception: null");
+        return;
+    case kJSTypeBoolean:
+        LOGE("JS Exception: %s", JSValueToBoolean(ctx, exception) ? "true" : "false");
+        return;
+    case kJSTypeNumber:
+        LOGE("JS Exception: %g", JSValueToNumber(ctx, exception, NULL));
+        return;
+    case kJSTypeString:
+        message_js_str = JSValueToStringCopy(ctx, exception, NULL);
+        if (!message_js_str)
+            goto error;
+        message_len = JSStringGetLength(message_js_str) + 1;
+        message_str = (char*)malloc(sizeof(char) * message_len);
+        JSStringGetUTF8CString(message_js_str, message_str, message_len);
+        LOGE("JS Exception: %s", message_str);
+        goto cleanup;
+    case kJSTypeObject:
+        break;
+    default:
+        // should never happen (famous last words)
+        LOGE("JS Exception: internal error");
+        return;
+    }
 
     except_obj = JSValueToObject(ctx, exception, &local_except);
-    if (local_except != NULL) {
-        LOGI("  couldn't coerce 'exception' value to object\n");
+    if (local_except)
         goto error;
-    }
 
-    message = JSObjectGetProperty(ctx, except_obj, JSStringCreateWithUTF8CString("message"), &local_except);
-    if (local_except != NULL) {
-        LOGI("  couldn't get property 'messager' from 'exception' object\n");
+    // test if exceptoin object has the properties we need, otherwise
+    // it is generic object and we don't need to handle it
+    message_prop_name = JSStringCreateWithUTF8CString("message");
+    line_prop_name = JSStringCreateWithUTF8CString("line");
+    name_prop_name = JSStringCreateWithUTF8CString("name");
+
+    if (!JSObjectHasProperty(ctx, except_obj, message_prop_name))
         goto error;
-    }
+
+    if (!JSObjectHasProperty(ctx, except_obj, line_prop_name))
+        goto error;
+
+    if (!JSObjectHasProperty(ctx, except_obj, name_prop_name))
+        goto error;
+
+    message = JSObjectGetProperty(ctx, except_obj, message_prop_name, &local_except);
+    if (local_except)
+        goto error;
 
     message_js_str = JSValueToStringCopy(ctx, message, &local_except);
-    if (local_except != NULL) {
-        LOGI("  couldn't get string copy from 'message'\n");
+    if (local_except)
         goto error;
-    }
 
     message_len = JSStringGetLength(message_js_str) + 1;
     message_str = (char*)malloc(sizeof(char) * message_len);
     JSStringGetUTF8CString(message_js_str, message_str, message_len);
 
-    line = JSObjectGetProperty(ctx, except_obj, JSStringCreateWithUTF8CString("line"), &local_except);
-    if (local_except != NULL) {
-        LOGI("  couldn't get property 'line' from 'exception' object\n");
+    line = JSObjectGetProperty(ctx, except_obj, line_prop_name, &local_except);
+    if (local_except)
         goto error;
-    }
 
     line_num = JSValueToNumber(ctx, line, &local_except);
-    if (local_except != NULL) {
-        LOGI("  couldn't coerce 'line' value to number\n");
+    if (local_except)
         goto error;
-    }
 
     // TODO: handle sourceId
     // sourceId = JSObjectGetProperty(ctx, except_obj, JSStringCreateWithUTF8CString("sourceId"), &local_except);
-    // if (local_exept != NULL)
+    // if (local_except)
     //   goto error;
 
-    name = JSObjectGetProperty(ctx, except_obj, JSStringCreateWithUTF8CString("name"), &local_except);
-    if (local_except != NULL) {
-        LOGI("  couldn't get property 'name' from 'exception' object\n");
+    name = JSObjectGetProperty(ctx, except_obj, name_prop_name, &local_except);
+    if (local_except)
         goto error;
-    }
 
     name_js_str = JSValueToStringCopy(ctx, name, &local_except);
-    if (local_except != NULL) {
-        LOGI("  couldn't get string copy from 'name'\n");
+    if (local_except)
         goto error;
-    }
 
     name_len = JSStringGetLength(name_js_str) + 1;
     name_str = (char*)malloc(sizeof(char) * name_len);
     JSStringGetUTF8CString(name_js_str, name_str, name_len);
 
-    LOGI("  name: %s\n", name_str);
-    LOGI("  message: %s\n", message_str);
-    LOGI("  line: %G\n", line_num);
+    LOGE("JS Exception: line %G; %s - %s\n", line_num, name_str, message_str);
 
     goto cleanup;
 
 error:
-    LOGI("  exception while handling exception\n");
+    LOGE("JS Exception: internal error (possible exception inception)");
 cleanup:
+    if (message_prop_name)
+        JSStringRelease(message_prop_name);
+
+    if (line_prop_name)
+        JSStringRelease(line_prop_name);
+
+    if (name_prop_name)
+        JSStringRelease(name_prop_name);
+
     if (message_js_str)
         JSStringRelease(message_js_str);
 

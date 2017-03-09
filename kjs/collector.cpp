@@ -327,7 +327,7 @@ void Collector::markCurrentThreadConservatively()
         pthread_getattr_np(thread, &sattr);
 #endif
 #if PLATFORM(LINUX)
-        // NOTE: this crashes on Android (maybe on Linix too)
+        // NOTE: this crashes on Android (maybe on Linux too)
         size_t stackSize;
         pthread_attr_getstack(&sattr, &stackBase, &stackSize);
 #else
