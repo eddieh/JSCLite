@@ -326,10 +326,12 @@ void Collector::markCurrentThreadConservatively()
         // FIXME: this function is non-portable; other POSIX systems may have different np alternatives
         pthread_getattr_np(thread, &sattr);
 #endif
-#if PLATFORM(LINIX) || PLATFORM(ANDROID)
+#if PLATFORM(LINUX)
+        // NOTE: this crashes on Android (maybe on Linix too)
         size_t stackSize;
         pthread_attr_getstack(&sattr, &stackBase, &stackSize);
 #else
+        // use this path for PLATFORM(ANDROID)
         pthread_attr_getstackaddr(&sattr, &stackBase);
 #endif
         assert(stackBase);
