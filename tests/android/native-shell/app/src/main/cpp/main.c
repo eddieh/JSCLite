@@ -200,15 +200,23 @@ void handle_exception(JSContextRef ctx, JSValueRef exception) {
     switch (except_type) {
     case kJSTypeUndefined:
         LOGE("JS Exception: undefined");
+        if (outfile)
+            fprintf(outfile, "FAILED! JS Exception: undefined");
         return;
     case kJSTypeNull:
         LOGE("JS Exception: null");
+        if (outfile)
+            fprintf(outfile, "FAILED! JS Exception: null");
         return;
     case kJSTypeBoolean:
         LOGE("JS Exception: %s", JSValueToBoolean(ctx, exception) ? "true" : "false");
+        if (outfile)
+            fprintf(outfile, "FAILED! JS Exception: %s", JSValueToBoolean(ctx, exception) ? "true" : "false");
         return;
     case kJSTypeNumber:
         LOGE("JS Exception: %g", JSValueToNumber(ctx, exception, NULL));
+        if (outfile)
+            fprintf(outfile, "FAILED! JS Exception: %g", JSValueToNumber(ctx, exception, NULL));
         return;
     case kJSTypeString:
         message_js_str = JSValueToStringCopy(ctx, exception, NULL);
@@ -218,12 +226,16 @@ void handle_exception(JSContextRef ctx, JSValueRef exception) {
         message_str = (char*)malloc(sizeof(char) * message_len);
         JSStringGetUTF8CString(message_js_str, message_str, message_len);
         LOGE("JS Exception: %s", message_str);
+        if (outfile)
+            fprintf(outfile, "FAILED! JS Exception: %s", message_str);
         goto cleanup;
     case kJSTypeObject:
         break;
     default:
         // should never happen (famous last words)
         LOGE("JS Exception: internal error");
+        if (outfile)
+            fprintf(outfile, "FAILED! JS Exception: internal error");
         return;
     }
 
@@ -284,11 +296,15 @@ void handle_exception(JSContextRef ctx, JSValueRef exception) {
     JSStringGetUTF8CString(name_js_str, name_str, name_len);
 
     LOGE("JS Exception: line %G; %s - %s\n", line_num, name_str, message_str);
+    if (outfile)
+        fprintf(outfile, "FAILED! JS Exception: line %G; %s - %s\n", line_num, name_str, message_str);
 
     goto cleanup;
 
 error:
     LOGE("JS Exception: internal error (possible exception inception)");
+    if (outfile)
+        fprintf(outfile, "FAILED! JS Exception: internal error (possible exception inception)");
 cleanup:
     if (message_prop_name)
         JSStringRelease(message_prop_name);
@@ -329,7 +345,7 @@ JSValueRef print_native(
         cstr = (char*)malloc(sizeof(char) * cstr_len);
         JSStringGetUTF8CString(jsstr, cstr, cstr_len);
 
-        //LOGI("%s", cstr);
+        LOGI("%s", cstr);
         fprintf(outfile, "%s\n", cstr);
 
         JSStringRelease(jsstr);
@@ -399,6 +415,7 @@ char *readFile(const char *fileName)
  * event loop thread.
  */
 void run_test_case(struct android_app *app) {
+    LOGI("\n>>> run_test_case begin");
     struct engine *engine = (struct engine *)app->userData;
     JSValueRef exception = NULL;
 
@@ -410,37 +427,63 @@ void run_test_case(struct android_app *app) {
         return;
     }
 
+    LOGI("  %s output file opened", engine->output);
+
     engine->ctx = JSGlobalContextCreate(NULL);
+    LOGI("  JSGlobalContext created");
 
     // print, quit, gc, version
     addJSFunction(engine->ctx, "print", print_native);
     addJSFunction(engine->ctx, "quit", noop_native);
     addJSFunction(engine->ctx, "gc", noop_native);
     addJSFunction(engine->ctx, "version", noop_native);
+    LOGI("  native functions registered");
 
     char *shellScript = readFile(engine->shell);
+    // read?
+
     char *testScript = readFile(engine->test);
+    // read?
+
+    LOGI("  shellScript read, length = %d", strlen(shellScript));
+    LOGI("  testScript read, length = %d", strlen(testScript));
 
     JSStringRef shellSrc = JSStringCreateWithUTF8CString(shellScript);
     JSStringRef testSrc = JSStringCreateWithUTF8CString(testScript);
 
+    free(shellScript);
+    free(testScript);
+
+    LOGI("  JS strings created from cstrs");
+
     JSEvaluateScript(engine->ctx, shellSrc, NULL, NULL, 0, &exception);
     if (exception) {
+        fprintf(outfile, "%s\n", engine->shell);
         handle_exception(engine->ctx, exception);
+        fclose(outfile);
+        outfile = NULL;
         return;
     }
+    LOGI("  evaluated shell script");
 
     JSEvaluateScript(engine->ctx, testSrc, NULL, NULL, 0, &exception);
     if (exception) {
+        fprintf(outfile, "%s\n", engine->test);
         handle_exception(engine->ctx, exception);
+        fclose(outfile);
+        outfile = NULL;
         return;
     }
+    LOGI("  evaluated test script");
 
     JSStringRelease(shellSrc);
     JSStringRelease(testSrc);
+    LOGI("  release JS strings");
 
     fclose(outfile);
     outfile = NULL;
+
+    LOGI("  close output file");
 }
 
 void android_main(struct android_app *app) {
