@@ -1,11 +1,9 @@
-Native Shell
-============
+# Native Shell
 
 Native shell for testing JSC on Android.
 
 
-Prerequisite
-============
+## Prerequisite
 
 First you must be able to build JSCLite for
 Android. From JSCLite's root directory running `make android` must
@@ -15,8 +13,7 @@ Once you can successfully build JSCLite then you can build the Native
 Shell.
 
 
-Building
-========
+## Building
 
 Create a `local.properties` file in this directory. The file must
 contain the keys `sdk.dir` and `ndk.dir`. Point these at the
@@ -43,8 +40,7 @@ install the APK using Gradle.
     ./gradlew installDebug
 
 
-Running Tests
-=============
+## Running Tests
 
 By itself this app does nothing. In order to run the Mozilla
 JavaScript test suite use the `android-test-driver.sh` test driver
